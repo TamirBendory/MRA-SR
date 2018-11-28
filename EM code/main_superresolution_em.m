@@ -8,12 +8,11 @@ sigma_vec = exp(-3:0.5:0);  % noise level
 N = 12;      % signal length
 m = 10^3;    % number of repetitions
 tol = 10^-4; %
-num_runs = 10;
+num_runs = 1;
 max_itr = 10^3; %maximum EM iterations
 
-% create random signal with unit norm
+% generate a random signal
 s = randn(N,1);
-s = s/norm(s);
 
 R = zeros(num_runs,length(sigma_vec));
 num_itr = zeros(num_runs,length(sigma_vec));
@@ -30,10 +29,12 @@ for j = 1:num_runs
         idx_A = zeros(1,m);
         idx_B = zeros(1,m);
         for i = 1:m            
-            x_hat = s(randi(K):K:end);            
-            X(:,i) = circshift(x_hat,randi(N/K))+sigma*randn(N/K,1);
-        end
-                
+            %x_hat = s(randi(K):K:end);            
+            %X(:,i) = circshift(x_hat,randi(N/K));
+            X(:,i) = circshift(s(randi(K):K:end),randi(N/K));
+        end        
+        X = X + sigma*randn(N/K,m);
+        
         x_init = randn(N,1);
         [x_hat,num_itr(j,sigma_idx)] = ...
             recover_signal_em_time_domain(X,K,sigma,x_init,tol,max_itr);
