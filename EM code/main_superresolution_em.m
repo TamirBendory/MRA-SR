@@ -6,13 +6,17 @@ clc;
 K = 2;       % Subsampling rate
 sigma_vec = exp(-3:0.5:0);  % noise level
 N = 12;      % signal length
+if isinteger(N/K)
+fprintf('K does not divide N!\n')
+end
 m = 10^3;    % number of repetitions
 tol = 10^-4; %
 num_runs = 1;
 max_itr = 10^3; %maximum EM iterations
 
-% generate a random signal
-s = randn(N,1);
+% generate a random Gaussian signal with specified covariance 
+%s = randn(N,1);
+s = mvnrnd(zeros(N,1),eye(N));
 
 R = zeros(num_runs,length(sigma_vec));
 num_itr = zeros(num_runs,length(sigma_vec));
