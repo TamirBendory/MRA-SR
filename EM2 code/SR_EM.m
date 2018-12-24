@@ -1,4 +1,4 @@
-function [x_est, discrepancy] = SR_EM(data, noise_level, K, x_init, S, niter, tolerance)
+function [x_est, EM_discrepancy] = SR_EM(data, noise_level, K, x_init, S, niter, tolerance)
 
 % data contains N observations as columns, each of length L/K
 % noise_level - std of the Gaussian noise
@@ -33,23 +33,24 @@ x_est = x_init;
 fftdata = fft(data);
 sqnormdata = repmat(sum(abs(data).^2, 1), size(data,1), 1);
 
-discrepancy = zeros(niter,1);
+EM_discrepancy = zeros(niter,1);
 for iter = 1 : niter
 
     % EM iteration
     x_new = EM_iteration(x_est, fftdata, sqnormdata, noise_level, K, S);
     % error between consecutive iterations; not the error with respect to
     % the signal itself (which is unknown)
-    discrepancy(iter) = norm(align_to_reference(x_new,x_est) - x_est)/norm(x_est);
+    EM_discrepancy(iter) = norm(align_to_reference(x_new,x_est) - x_est)/norm(x_est);
     
     if mod(iter,100) == 0 
-        fprintf('iter = %g, discrepancy = %.4g \n', iter, discrepancy(iter));
+        fprintf('iter = %g, discrepancy = %.4g \n', iter, EM_discrepancy(iter));
+        save('XP_data', '-regexp', '^(?!(data)$).') %saving all variables but data
     end
         
     % stopping criterion
-    if  discrepancy(iter) < tolerance
+    if  EM_discrepancy(iter) < tolerance
         x_est = x_new;
-        discrepancy = discrepancy(1:iter);
+        EM_discrepancy = EM_discrepancy(1:iter);
         fprintf('EM last iteration = %g\n', iter);
         break;
     end
@@ -91,13 +92,19 @@ W = bsxfun(@times, W, 1./sum(W, 1));
 % Y = zeros(L,N);
 % Y(1:K:L,:) = ifft(fftdata);
 % b = ifft(sum(conj(fft(W)).*fft(Y), 2))/sigma^2;
+a = zeros(L,1);
 b = zeros(L,1);
 for i = 1:K
-b(i:K:end) = ifft(sum(conj(fft(W(i:K:L,:))).*fftdata, 2))/sigma^2;
+w = W(i:K:L,:);
+b(i:K:end) = ifft(sum(conj(fft(w)).*fftdata, 2))/sigma^2;
+a(i:K:end) = sum(w(:)); 
 end
 
-% approximating the accurate A (see notes)
-A = N/sigma^2/K*eye(L) + S;
+A = diag(a)/sigma^2 + S;
+
+% Approximating the accurate A (see notes)
+%A = N/sigma^2/K*eye(L) + S;
+
 x_new = A\b;
 
 end

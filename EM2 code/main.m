@@ -10,12 +10,12 @@ if isempty(gcp('nocreate'))
     parpool(parallel_nodes, 'IdleTimeout', 240);
 end
 
-L = 8; % signal length
-K = 1; % down-sampling factor 
+L = 20; % signal length
+K = 2; % down-sampling factor 
 assert(mod(L,K)==0,'Please choose K to be a divsor of L');
 
 % Generating a signal with decaying power spectrum
-beta = 4;
+beta = 3;
 
 % The expected power spectrum of the signal (imposing symmetry in the
 % Fourier domain)
@@ -38,8 +38,11 @@ x_true = x_true(:);
 N = 1e4;
 
 % Noise level
-snr = 10;
+snr = 1;
 noise_level = sqrt(norm(x_true)^2/snr); % std of the Gaussian noise
+
+% saving the parameters of the problem
+save('parameters');
 
 % Generate the data
 data = generate_observations(x_true, N, noise_level, K);
@@ -51,12 +54,12 @@ x_init = mvnrnd(zeros(L,1), SIGMA);
 x_init = x_init(:);
 S = inv(SIGMA); % Note: S is the inverse of the covarince matrix!
 niter = 1000; % maximal number of iteration for EM
-tolerance = 1e-5; % tolerance for stopping criterion 
+tolerance = 1e-8; % tolerance for stopping criterion 
 [x_est, EM_discrepancy] = SR_EM(data, noise_level, K, x_init, S, niter, tolerance);
 
 % saving results
-clear data
-save('XP_data')
+%clear data
+%save('XP_data')
 
 %% Evaluate quality of recovery
 
