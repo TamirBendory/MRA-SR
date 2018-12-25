@@ -35,11 +35,11 @@ x_true = mvnrnd(zeros(L,1), SIGMA);
 x_true = x_true(:);
 
 % Number of measurements
-N = 1e4;
+N = 1e5;
 
 % Noise level
 snr = 1;
-noise_level = sqrt(norm(x_true)^2/snr); % std of the Gaussian noise
+noise_level = sqrt(norm(x_true)^2/K/snr); % std of the Gaussian noise
 
 % saving the parameters of the problem
 save('parameters');

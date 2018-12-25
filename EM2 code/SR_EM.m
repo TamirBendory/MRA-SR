@@ -72,8 +72,24 @@ function x_new = EM_iteration(x_est, fftdata, sqnormdata, sigma, K, S)
 
 L = length(x_est);
 N = size(fftdata,2);
-W = zeros(L,N);
 
+% wrong code
+% W = zeros(L,N);
+% 
+% for i = 1:K
+%     The idea here is to compute the weights for each sub-signal
+%     separately, and then combine them. The weights of each sub-signal can be
+%     computed efficiently using fft.
+%     xk = x_est(i:K:end);
+%     fftx = fft(xk);
+%     C = ifft(bsxfun(@times, conj(fftx), fftdata));
+%     T = -(sqnormdata + norm(xk)^2 - 2*C)/(2*sigma^2);
+%     T = bsxfun(@minus, T, max(T, [], 1)); % subtracting the max value
+%     W(i:K:L,:) = exp(T);
+% end
+% 
+
+T = zeros(L,N);
 for i = 1:K
     % The idea here is to compute the weights for each sub-signal
     % separately, and then combine them. The weights of each sub-signal can be
@@ -81,12 +97,11 @@ for i = 1:K
     xk = x_est(i:K:end);
     fftx = fft(xk);
     C = ifft(bsxfun(@times, conj(fftx), fftdata));
-    T = -(sqnormdata + norm(xk)^2 - 2*C)/(2*sigma^2);
-    T = bsxfun(@minus, T, max(T, [], 1)); % subtracting the max value
-    W(i:K:L,:) = exp(T);
+    T(i:K:L,:) = -(sqnormdata + norm(xk)^2 - 2*C)/(2*sigma^2);
 end
 
-% normalization
+T = bsxfun(@minus, T, max(T, [], 1)); % subtracting the max value
+W = exp(T);
 W = bsxfun(@times, W, 1./sum(W, 1));
 
 % Y = zeros(L,N);
