@@ -44,7 +44,7 @@ for iter = 1 : niter
     
     if mod(iter,100) == 0 
         fprintf('iter = %g, discrepancy = %.4g \n', iter, EM_discrepancy(iter));
-        save('XP_data', '-regexp', '^(?!(data)$).') %saving all variables but data
+        save('XP_data', '-regexp', '^(?!(data|fftdata|sqnormdata)$).') %saving all variables but data
     end
         
     % stopping criterion
