@@ -1,5 +1,6 @@
 \documentclass[english,12pt]{article}
 
+
 \usepackage{amsthm}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -9,44 +10,78 @@
 \newtheorem{cor}{Corollary}
 \newcommand{\I}{\iota}
 \newcommand{\R}{\mathbb{R}}
-\newcommand{\tB}{\tilde{B}}
+%\newcommand{\tB}{\tilde{B}}
+\newcommand{\tB}{B_w}
+\numberwithin{equation}{section}
 
 \begin{document}
 
-\title{SR-MRA}
+\title{Super-resolution meets multi-reference alignment}
 
 \author{Tamir Bendory}
 \date{January 2019}
 \maketitle
 
-\section{The continuous model}
+
+\section{Introduction}
+
+Discuss classical super-resolution, multi-reference alignment, bispectrum
+
+\section{Model}
 
 We assume to collect $N$ independent observations from the model 
 \begin{equation}
 y = PR_\theta x + \varepsilon,
 \end{equation}
-where $x\in S^1$ is a bandlimited signal on the circle, that is, 
-\begin{eqnarray} \label{eq:fourier_expansion}
-x(t) = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I bt }, \quad t\in(0,1],
-\end{eqnarray}
-$R_\theta$ is a rotation, where $\theta\sim \text{Uniform}[0,1)$, and $\varepsilon\sim\mathcal{N}(0,\sigma^2 I)$. 
-The operator $P$ collects $L$ equally-spaced samples of the signal after the SO(2) rotation. We consider the asymptotic regime $N\to \infty$. We will denote $LK := B := 2\tB+1$, where $K\in\mathbb{N}$ is the \textbf{down-sampling factor}.
-In this note, we omit the effects of the noise (that is, bias).
-
-\section{The discrete case}
-
-We start by considering a simpler setup, dubbed the \emph{discrete case}. In this model, we assume that $\theta$ is not continuous, but rather sampled uniformly on the grid $$\mathcal{B}:=\left\{0,\frac{1}{B},\ldots\frac{B-1}{B}\right\},$$ (recall that $B$ is the signal's band-width). 
-In each measurement, the signal is rotated uniformly over  $\mathcal{B}$, and then sampled on a coarser grid $$\mathcal{L}_0:=\left\{0,\frac{K}{B},\frac{2K}{B},\ldots,\frac{(L-1)K}{B}\right\}.$$ 
-Each measurement can be then written as
+%so that 
+%\begin{equation}
+%y_i = PR_{\theta_i} x_i + \varepsilon_i, \quad i=1,\ldots,N.
+%\end{equation}
+where $x\in S^1$ is a signal on the circle, $R_\theta$ denotes a random, unknown rotation, and $\theta$ is distributed uniformly $\theta\sim \text{Uniform}[0,1)$. 
+The noise is assumed to be normal i.i.d.\  $\varepsilon\sim\mathcal{N}(0,\sigma^2 I)$.
+In this work, we mainly focus on the high noise regime in which $sigma$ is greater than $\|x\|_2$. 
+Following the rotation, 
+the operator $P$ collects $L$ equally-spaced samples of the signal. Thus, the recorded samples of the $i$th measurement are given by 
 \begin{equation}
-y_\tau[\ell] = x\left(\frac{\ell K+\tau}{B}\right)=x\left(\frac{\ell}{L} + \frac{\tau}{B}\right), \quad \ell=0,\ldots L-1,
+y_i[\ell] = \left(R_{\theta_i} x\right)[\ell] + \varepsilon_i[\ell], \quad \ell=0,\ldots,L-1.
+\end{equation}
+
+
+The underlying  signal  is assumed to be band-limited so it can be expanded in a finite Fourier expansion 
+\begin{eqnarray} \label{eq:fourier_expansion}
+x(t) = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I bt }. \quad t\in[0,1),
+\end{eqnarray}
+We are interested the interplay between the number of samples $L$ and the signal's band-width $B := 2\tB+1$. We denote this ratio by  $LK=B$ for some \emph{down-sampling factor} $K\in\mathbb{N}$.  
+This model, for which we refer to as the \emph{continuous SR model}, is the main subject of this paper. 
+
+
+In addition to the continuous case, we consider the \emph{discrete SR model}. 
+In this model, we allow $\theta$ to rotate only on a grid over $S^1$ defined by  $$\mathcal{B}:=\left\{0,\frac{1}{B},\ldots\frac{B-1}{B}\right\}.$$
+In each measurement, the signal is rotated uniformly over  $\mathcal{B}$, and then sampled on a coarser grid $$\mathcal{L}_0:=\left\{0,\frac{K}{B},\frac{2K}{B},\ldots,\frac{(L-1)K}{B}\right\}.$$ 
+
+Under this model, the samples of the $i$th measurement can be then written as
+\begin{equation}
+y_i[\ell] = x\left(\frac{\ell K+\tau}{B}\right)=x\left(\frac{\ell}{L} + \frac{\tau}{B}\right), \quad \ell=0,\ldots L-1,
 \end{equation}
 for some random $\tau\in\{0,\ldots B-1\}$. 
 We also note that according to~\eqref{eq:fourier_expansion},  $y$ can be expanded by a Fourier series as
 \begin{eqnarray}
 y_\tau[\ell] = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b \left(\frac{\ell}{L} + \frac{\tau}{B}\right) }.
 \end{eqnarray}
-%We assume that the spectrum of $x$ (and thus also of $y$) is periodic. Later we will discuss the implications of a non-periodic, finite, spectrum (a more realistic assumption).
+
+The discrete model can be formulate conveniently in a matrix-vector notation as  
+\begin{equation} \label{eq:discrete}
+y_{\mathcal{B}} = P_BR_{\theta_\mathcal{B}} x_B + \varepsilon,
+\end{equation}
+where $x_B\in\mathbb{R}^\mathcal{B}$ is the restriction of $x$ to $\mathcal{B}$, $R_{\theta_\mathcal{B}}$ is a circular shift (uniformly distributed) on $\mathcal{B} $and the sampling operator $P_B\in\mathbb{R}^{B\times B}$ can be thought of as a diagonal matrix, whose diagonal is composed of 1's every other $K$ entry, and zero otherwise
+
+The main goal of this work is to analyze the conditions enabling accurate estimate of $x$ in the continuous and discrete models in high noise regimes. As we show, accurate recovery depends on the relations between two pairs of parameters: the number of measurements as a function of the noise level, and the number of required samples as a function of the signal's band-width. Since our analysis is based on the method of moments, the required number of measurements scales asymptotically as $\sigma^{2d}$, where $d$ is the higher-order moment used~\cite{abbe2018estimation,bandeira2017estimation}. 
+In this work, we focus on the third-moment---the bispectrum---and thus $N$ should be, at least, proportional to $\sigma^6$. In Section XXX we discuss the implication of using higher moments. Hence, we now proceed to analyze the how many samples are required for a given band-width. 
+
+
+\section{Analysis of discrete super-resolution}
+
+We begin by analyzing the discrete setting~\eqref{eq:discrete}. 
 
 Since we assume uniform distribution over $\mathcal{B}$, in each measurement we observe one of $K$ signals $x_1,\ldots,x_K\in\R^L$, each corresponds to some random rotation of $x$ on the grid  $$\mathcal{L}_j:=\{j,\frac{K+j}{B},\frac{2K+j}{B},\ldots,\frac{(L-1)K+j}{B}\}$$ for some $j=0,\ldots,K-1$.
 Now, since all rotations of $x_j$ have the same bispectrum, and each sub-signal is equally likely to appear, the  
@@ -126,51 +161,62 @@ What happens if we remove the periodicity assumption in the frequency domain? In
 
 By taking $p\to\infty$ we let the grid to rotate freely on the circle. Therefore, in the continuous setting we need to acquire $L\sim\sqrt{B}$ samples. Note also that indeed the expression~\eqref{eq:mix_bispectra} coincides with the expression we got in the continuous setting in a previous note.
 
-\section{Replacing the point-wise sampling by averaging}
+\section{Future work}
+general group actions
 
-A more realistic sampling process averages over $L$  intervals of length $1/L$, rather than takes point-wise samples.  
-In this model, each measurement is given by 
-\begin{equation}
-y_\tau[\ell] = \int_{\ell/L}^{(\ell+1)/L}x\left(\eta + \frac{\tau}{B}\right)d\eta.
-\end{equation}
-The third-order autocorrelation is then given by 
-\begin{equation}
-\begin{split}
-M_3[n_1,n_2] &= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} y_\tau[\ell] y_\tau[\ell-n_1] y_\tau[\ell-n_2]\\ 
-&= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} \left(\int_{\ell/L}^{(\ell+1)/L}x\left(\eta_0 + \frac{\tau}{B}\right)d\eta_0\right)
-\left(\int_{(\ell-n_1)/L}^{(\ell-n_1+1)/L}x\left(\eta_1 + \frac{\tau}{B}\right)d\eta_1\right) \\ 
-&\times 
-\left(\int_{(\ell-n_2)/L}^{(\ell-n_2+1)/L}x\left(\eta_2 + \frac{\tau}{B}\right)d\eta_2\right)
-\\
-&= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} 
-\left(\int_{(\ell-n_1)/L}^{(\ell-n_1+1)/L}\sum_{b_1=-\tB}^{\tB}\hat{x}[b_1]e^{2\pi\I b_1 \left(\eta_1 + \frac{\tau}{B}\right) } d\eta_1\right) \\&\times 
-\left(\int_{(\ell-n_2)/L}^{(\ell-n_2+1)/L}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_2]e^{2\pi\I b_2 \left(\eta_2 + \frac{\tau}{B}\right) } d\eta_2\right) \\&\times 
-\left(\int_{(\ell)/L}^{(\ell+1)/L}\sum_{b_0=-\tB}^{\tB}\hat{x}[b_0]e^{2\pi\I b_0 \left(\eta_0 + \frac{\tau}{B}\right) } d\eta_0\right).
-\end{split}
-\end{equation}
-By replacing order of sums and integrals, and using~\eqref{eq:sum} it reduces to 
-\begin{equation}
-\begin{split}
-M_3[n_1,n_2] 
-&= \frac{1}{L}\sum_{\ell=0}^{L-1}\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB} \hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2] \\
-&\times \int_{(\ell-n_1)/L}^{(\ell-n_1+1)/L}
-\int_{(\ell-n_2)/L}^{(\ell-n_2+1)/L}
-\int_{\ell/L}^{(\ell+1)/L}
-e^{-2\pi\I b_1(\eta_1-\eta_0) } 
-e^{-2\pi\I b_2(\eta_2-\eta_0) }
- d\eta_1  d\eta_2 d\eta_0.
-\end{split}
-\end{equation}
-Now, by changing variables $\tilde \eta_1=\eta_1-\eta_0$, and $\tilde \eta_2=\eta_2-\eta_0$ we note that the ranges of the new variables are simply $[n_1/L,(n_1+1)/L)$ and $[n_2/L,(n_2+1)/L)$, respectively. 
-Thus, 
-\begin{equation}
-\begin{split}
-M_3[n_1,n_2] 
-&= \sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB} \hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2]
-f(n_1;b_1)f(n_2;b_2)
-\end{split}
-\end{equation}
-where $f(n_1;b_1):=\int_{n/L}^{(n+1)/L}e^{-2\pi\I b\eta}d\eta.$
+cryo-EM
+
+higher moments
+
+non-periodic signals 
+%\section{Replacing the point-wise sampling by averaging}
+%
+%A more realistic sampling process averages over $L$  intervals of length $1/L$, rather than takes point-wise samples.  
+%In this model, each measurement is given by 
+%\begin{equation}
+%y_\tau[\ell] = \int_{\ell/L}^{(\ell+1)/L}x\left(\eta + \frac{\tau}{B}\right)d\eta.
+%\end{equation}
+%The third-order autocorrelation is then given by 
+%\begin{equation}
+%\begin{split}
+%M_3[n_1,n_2] &= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} y_\tau[\ell] y_\tau[\ell-n_1] y_\tau[\ell-n_2]\\ 
+%&= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} \left(\int_{\ell/L}^{(\ell+1)/L}x\left(\eta_0 + \frac{\tau}{B}\right)d\eta_0\right)
+%\left(\int_{(\ell-n_1)/L}^{(\ell-n_1+1)/L}x\left(\eta_1 + \frac{\tau}{B}\right)d\eta_1\right) \\ 
+%&\times 
+%\left(\int_{(\ell-n_2)/L}^{(\ell-n_2+1)/L}x\left(\eta_2 + \frac{\tau}{B}\right)d\eta_2\right)
+%\\
+%&= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} 
+%\left(\int_{(\ell-n_1)/L}^{(\ell-n_1+1)/L}\sum_{b_1=-\tB}^{\tB}\hat{x}[b_1]e^{2\pi\I b_1 \left(\eta_1 + \frac{\tau}{B}\right) } d\eta_1\right) \\&\times 
+%\left(\int_{(\ell-n_2)/L}^{(\ell-n_2+1)/L}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_2]e^{2\pi\I b_2 \left(\eta_2 + \frac{\tau}{B}\right) } d\eta_2\right) \\&\times 
+%\left(\int_{(\ell)/L}^{(\ell+1)/L}\sum_{b_0=-\tB}^{\tB}\hat{x}[b_0]e^{2\pi\I b_0 \left(\eta_0 + \frac{\tau}{B}\right) } d\eta_0\right).
+%\end{split}
+%\end{equation}
+%By replacing order of sums and integrals, and using~\eqref{eq:sum} it reduces to 
+%\begin{equation}
+%\begin{split}
+%M_3[n_1,n_2] 
+%&= \frac{1}{L}\sum_{\ell=0}^{L-1}\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB} \hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2] \\
+%&\times \int_{(\ell-n_1)/L}^{(\ell-n_1+1)/L}
+%\int_{(\ell-n_2)/L}^{(\ell-n_2+1)/L}
+%\int_{\ell/L}^{(\ell+1)/L}
+%e^{-2\pi\I b_1(\eta_1-\eta_0) } 
+%e^{-2\pi\I b_2(\eta_2-\eta_0) }
+% d\eta_1  d\eta_2 d\eta_0.
+%\end{split}
+%\end{equation}
+%Now, by changing variables $\tilde \eta_1=\eta_1-\eta_0$, and $\tilde \eta_2=\eta_2-\eta_0$ we note that the ranges of the new variables are simply $[n_1/L,(n_1+1)/L)$ and $[n_2/L,(n_2+1)/L)$, respectively. 
+%Thus, 
+%\begin{equation}
+%\begin{split}
+%M_3[n_1,n_2] 
+%&= \sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB} \hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2]
+%f(n_1;b_1)f(n_2;b_2)
+%\end{split}
+%\end{equation}
+%where $f(n_1;b_1):=\int_{n/L}^{(n+1)/L}e^{-2\pi\I b\eta}d\eta.$
+
+\bibliographystyle{plain}
+\bibliography{ref}
 
 \end{document}
 
