@@ -5,14 +5,17 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage[margin=1in]{geometry}
-\newtheorem{claim}{Claim}
-\newtheorem{conj}{Conjecture}
-\newtheorem{cor}{Corollary}
 \newcommand{\I}{\iota}
 \newcommand{\R}{\mathbb{R}}
 %\newcommand{\tB}{\tilde{B}}
 \newcommand{\tB}{B_w}
+
 \numberwithin{equation}{section}
+
+\newtheorem{claim}{Claim}
+\newtheorem{conj}{Conjecture}
+\newtheorem{cor}{Corollary}
+\newtheorem{prop}{Proposition}
 
 \begin{document}
 
@@ -25,12 +28,12 @@
 
 \section{Introduction}
 
-Discuss classical super-resolution, multi-reference alignment, bispectrum
+Discuss classical super-resolution, multi-reference alignment, bispectrum, the effect of noise and bias
 
 \section{Model}
 
 We assume to collect $N$ independent observations from the model 
-\begin{equation}
+\begin{equation} \label{eq:model}
 y = PR_\theta x + \varepsilon,
 \end{equation}
 %so that 
@@ -39,25 +42,27 @@ y = PR_\theta x + \varepsilon,
 %\end{equation}
 where $x\in S^1$ is a signal on the circle, $R_\theta$ denotes a random, unknown rotation, and $\theta$ is distributed uniformly $\theta\sim \text{Uniform}[0,1)$. 
 The noise is assumed to be normal i.i.d.\  $\varepsilon\sim\mathcal{N}(0,\sigma^2 I)$.
-In this work, we mainly focus on the high noise regime in which $sigma$ is greater than $\|x\|_2$. 
-Following the rotation, 
-the operator $P$ collects $L$ equally-spaced samples of the signal. Thus, the recorded samples of the $i$th measurement are given by 
+In this work, we mainly focus on the high noise regime in which $\sigma$ is greater than $\|x\|_2$. 
+Following the rotation, the operator $P$ collects $L$ equally-spaced samples of the signal. Thus, the recorded samples of the $i$th measurement are given by 
 \begin{equation}
 y_i[\ell] = \left(R_{\theta_i} x\right)[\ell] + \varepsilon_i[\ell], \quad \ell=0,\ldots,L-1.
 \end{equation}
-
+Throughout, we assume that $\sigma^2$. In many applications, the variance of the noise can be estimated accurately from the samples, or is known apriori. %Specifically for~\eqref{eq:model} the variance can be estimated by
 
 The underlying  signal  is assumed to be band-limited so it can be expanded in a finite Fourier expansion 
 \begin{eqnarray} \label{eq:fourier_expansion}
 x(t) = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I bt }. \quad t\in[0,1),
 \end{eqnarray}
-We are interested the interplay between the number of samples $L$ and the signal's band-width $B := 2\tB+1$. We denote this ratio by  $LK=B$ for some \emph{down-sampling factor} $K\in\mathbb{N}$.  
+We are interested the interplay between the number of samples $L$ and the signal's band-width $B := 2\tB+1$. We denote this ratio by  $LK=B$ for some \emph{down-sampling factor} $K\in\mathbb{Z}_{>0}$.  
 This model, for which we refer to as the \emph{continuous SR model}, is the main subject of this paper. 
 
 
 In addition to the continuous case, we consider the \emph{discrete SR model}. 
 In this model, we allow $\theta$ to rotate only on a grid over $S^1$ defined by  $$\mathcal{B}:=\left\{0,\frac{1}{B},\ldots\frac{B-1}{B}\right\}.$$
-In each measurement, the signal is rotated uniformly over  $\mathcal{B}$, and then sampled on a coarser grid $$\mathcal{L}_0:=\left\{0,\frac{K}{B},\frac{2K}{B},\ldots,\frac{(L-1)K}{B}\right\}.$$ 
+In each measurement, the signal is rotated uniformly over  $\mathcal{B}$, and then sampled on a coarser grid 
+\begin{equation} \label{eq:grid_L}
+\mathcal{L}_0:=\left\{0,\frac{K}{B},\frac{2K}{B},\ldots,\frac{(L-1)K}{B}\right\}.
+\end{equation}
 
 Under this model, the samples of the $i$th measurement can be then written as
 \begin{equation}
@@ -70,10 +75,10 @@ y_\tau[\ell] = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b \left(\frac{\ell}{L} + \
 \end{eqnarray}
 
 The discrete model can be formulate conveniently in a matrix-vector notation as  
-\begin{equation} \label{eq:discrete}
-y_{\mathcal{B}} = P_BR_{\theta_\mathcal{B}} x_B + \varepsilon,
+\begin{equation} \label{eq:discrete_model}
+y^d = P_BR_{\theta_\mathcal{B}} x^d + \varepsilon,
 \end{equation}
-where $x_B\in\mathbb{R}^\mathcal{B}$ is the restriction of $x$ to $\mathcal{B}$, $R_{\theta_\mathcal{B}}$ is a circular shift (uniformly distributed) on $\mathcal{B} $and the sampling operator $P_B\in\mathbb{R}^{B\times B}$ can be thought of as a diagonal matrix, whose diagonal is composed of 1's every other $K$ entry, and zero otherwise
+where $x^d\in\mathbb{R}^{B}$ is the restriction of $x$ to $\mathcal{B}$, $R_{\theta_\mathcal{B}}$ is a circular shift (uniformly distributed) on $\mathcal{B} $and the sampling operator $P_B\in\mathbb{R}^{B\times B}$ can be thought of as a diagonal matrix, whose diagonal is composed of 1's every other $K$ entry, and zero otherwise
 
 The main goal of this work is to analyze the conditions enabling accurate estimate of $x$ in the continuous and discrete models in high noise regimes. As we show, accurate recovery depends on the relations between two pairs of parameters: the number of measurements as a function of the noise level, and the number of required samples as a function of the signal's band-width. Since our analysis is based on the method of moments, the required number of measurements scales asymptotically as $\sigma^{2d}$, where $d$ is the higher-order moment used~\cite{abbe2018estimation,bandeira2017estimation}. 
 In this work, we focus on the third-moment---the bispectrum---and thus $N$ should be, at least, proportional to $\sigma^6$. In Section XXX we discuss the implication of using higher moments. Hence, we now proceed to analyze the how many samples are required for a given band-width. 
@@ -81,16 +86,49 @@ In this work, we focus on the third-moment---the bispectrum---and thus $N$ shoul
 
 \section{Analysis of discrete super-resolution}
 
-We begin by analyzing the discrete setting~\eqref{eq:discrete}. 
+We begin by analyzing the discrete setting~\eqref{eq:discrete_model}. For the analysis, we split the discrete signal $x_B\in\mathbb{R}^B$ into $K$ signals, denoted by $x_0,\ldots,x_{K-1}\in\mathbb{R}^L$ as follows:
+\begin{eqnarray}
+x_i[\ell] = x^d[K\ell+i], \quad \ell=0,\ldots L-1. 
+\end{eqnarray}
+Each one of the signals corresponds to some random rotation of $x$ on the grid  $$\mathcal{L}_i:=\left\{i,\frac{K+i}{B},\frac{2K+i}{B},\ldots,\frac{(L-1)K+i}{B}\right\}.$$
+Using this notation, one can reformulate the model as 
+\begin{equation} \label{eq:heter_mra}
+y^d =  R_{\theta_{\mathcal{L}_0}} x_{v} + \varepsilon,
+\end{equation}
+where $v$ distributed uniformly over $\{0,\ldots,K-1\}$ and $\mathcal{L}_0$ is defined in~\eqref{eq:grid_L}. 
 
-Since we assume uniform distribution over $\mathcal{B}$, in each measurement we observe one of $K$ signals $x_1,\ldots,x_K\in\R^L$, each corresponds to some random rotation of $x$ on the grid  $$\mathcal{L}_j:=\{j,\frac{K+j}{B},\frac{2K+j}{B},\ldots,\frac{(L-1)K+j}{B}\}$$ for some $j=0,\ldots,K-1$.
-Now, since all rotations of $x_j$ have the same bispectrum, and each sub-signal is equally likely to appear, the  
-average bispectrum of $y$ is the average of the bispectra of all sub-signals, that is,$$B_y = \frac{1}{K}\sum_{i=0}^{K-1}B_{x_i}\in\R^{L\times L}.$$ 
- Therefore, from Bandeira et al. we conclude the generically we can recover the $K$ bispectra, up to permutation, as long as $K\leq L/6$, or $K\leq \sqrt{B/6}$.
+The model~\eqref{eq:heter_mra} has been studied in the literature under the name \emph{heterogeneous multi-reference alignment}~\cite{perry2017sample,bandeira2017estimation,boumal2018heterogeneous}. In particular, in the limit of $N\to\infty$ it is straight-forward to show that 
+\begin{align} \label{eq:mix_invariants}
+\mu_{y^d} &= \frac{1}{K}\sum_{i=1}^K \mu_{x_i}, \nonumber\\
+P_{y^d} &= \frac{1}{K}\sum_{i=1}^K P_{x_i} + \sigma^2L\mathbf{1}, \\
+B_{y^d} &= \frac{1}{K}\sum_{i=1}^K (B_{x_i} +\mu_{x_i}\sigma^2L^2 A ), \nonumber
+\end{align}
+where $\mathbf{1}\in\mathbb{R}^L$ is a vector of ones, and $A\in\mathbb{R}^{L\times L}$ is a zero matrix except $A[0,0]=3$ and $A[i,0]=A[0,i]=A[i,i]=1$ for $i=1,\ldots,L-1$.
+Given $\sigma^2$, one can debias the invariant estimations and the problem reduces to the question of demixing.
 
-\begin{claim} \label{claim1}
-Under the discrete periodic model, one can sub-sample the signal by a factor of  	$K\leq \sqrt{B/6}$ and retrieve $x_1,\ldots,x_K$, up to shift and permutation. 
-\end{claim}	
+Recovering the set of $K$ signals from the invariants~\eqref{eq:mix_invariants} was studied~\cite{bandeira2017estimation}. In this work, it was shown that $K$ generic signals can be recovered from~\eqref{eq:mix_invariants}, up to permutation and cyclic shifts, as long as 
+\begin{equation} \label{eq:Pl}
+\mathcal{P}(L) := \frac{L+3+\left\lfloor L/2\right\rfloor +  \left\lceil (L-1)(L-2)/6\right\rceil}{L+1} > K.
+\end{equation}
+Since $\mathcal{P}(L) \approx L/6$, we conclude that the bound on the down-sampling factor scales as $\sqrt{B/6}$.
+This bound was proved (by computational tools) for $K\leq 15$, and was conjectured to hold true for any $K$~\cite{bandeira2017estimation}.
+
+Therefore, we conclude the following result:
+\begin{prop} \label{prop1}
+Consider the  discrete periodic model~\eqref{eq:discrete_model} when $N\to\infty$. 
+For $K\leq 15$ and for $\mathcal{P}(B/K)>K$, one can identify the signals 
+\begin{equation} \label{eq:set_signals}
+R_{\theta_0}x_{\pi(0)}, \ldots,R_{\theta_{K-1}}x_{\pi(K-1)},
+\end{equation}
+for some arbitrary cyclic shifts $R_{\theta_i}$ for $i=0,\ldots,L-1$, and a permutation $\pi$.
+If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for $K>15$.
+\end{prop}	
+
+It is important to note that Proposition~\eqref{prop1} is theoretical in the sense that it is not clear whether the bound~\eqref{eq:Pl} can be achieved computationally.  
+This question was studied empirically in~\cite{boumal2018heterogeneous}. Numerical evidences suggest that the maximal number of signals that can recovered, up cyclic shifts and permutation, from~\eqref{eq:mix_bispectra} is $\sqrt{L}$. If this is true, then the number of signals that can be computationally 
+demixed is $K\leq \sqrt{L}$, or, $K\sim B^{1/3}$. 
+
+Proposition~\ref{prop1} suggests that all entries of the underlying signal can be recovered in the regime of~\eqref{eq:Pl}. However, there is a combinatorial number of different ways to order $x_1,\ldots,x_K$ 
 
 \begin{conj} \label{conj1}
 	Under the discrete-periodic signal, one can sub-sample by a factor of  	$K\leq \sqrt{B/6}$ and retrieve  $x$ on the grid $\mathcal{B}$, up to shift, under some smoothing condition. \textbf{We should prove this conjecture.}
