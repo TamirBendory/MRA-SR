@@ -1,0 +1,176 @@
+\documentclass[english,12pt]{article}
+
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[margin=1in]{geometry}
+\newtheorem{claim}{Claim}
+\newtheorem{conj}{Conjecture}
+\newtheorem{cor}{Corollary}
+\newcommand{\I}{\iota}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\tB}{\tilde{B}}
+
+\begin{document}
+
+\title{SR-MRA}
+
+\author{Tamir Bendory}
+\date{January 2019}
+\maketitle
+
+\section{The continuous model}
+
+We assume to collect $N$ independent observations from the model 
+\begin{equation}
+y = PR_\theta x + \varepsilon,
+\end{equation}
+where $x\in S^1$ is a bandlimited signal on the circle, that is, 
+\begin{eqnarray} \label{eq:fourier_expansion}
+x(t) = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I bt }, \quad t\in(0,1],
+\end{eqnarray}
+$R_\theta$ is a rotation, where $\theta\sim \text{Uniform}[0,1)$, and $\varepsilon\sim\mathcal{N}(0,\sigma^2 I)$. 
+The operator $P$ collects $L$ equally-spaced samples of the signal after the SO(2) rotation. We consider the asymptotic regime $N\to \infty$. We will denote $LK := B := 2\tB+1$, where $K\in\mathbb{N}$ is the \textbf{down-sampling factor}.
+In this note, we omit the effects of the noise (that is, bias).
+
+\section{The discrete case}
+
+We start by considering a simpler setup, dubbed the \emph{discrete case}. In this model, we assume that $\theta$ is not continuous, but rather sampled uniformly on the grid $$\mathcal{B}:=\left\{0,\frac{1}{B},\ldots\frac{B-1}{B}\right\},$$ (recall that $B$ is the signal's band-width). 
+In each measurement, the signal is rotated uniformly over  $\mathcal{B}$, and then sampled on a coarser grid $$\mathcal{L}_0:=\left\{0,\frac{K}{B},\frac{2K}{B},\ldots,\frac{(L-1)K}{B}\right\}.$$ 
+Each measurement can be then written as
+\begin{equation}
+y_\tau[\ell] = x\left(\frac{\ell K+\tau}{B}\right)=x\left(\frac{\ell}{L} + \frac{\tau}{B}\right), \quad \ell=0,\ldots L-1,
+\end{equation}
+for some random $\tau\in\{0,\ldots B-1\}$. 
+We also note that according to~\eqref{eq:fourier_expansion},  $y$ can be expanded by a Fourier series as
+\begin{eqnarray}
+y_\tau[\ell] = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b \left(\frac{\ell}{L} + \frac{\tau}{B}\right) }.
+\end{eqnarray}
+%We assume that the spectrum of $x$ (and thus also of $y$) is periodic. Later we will discuss the implications of a non-periodic, finite, spectrum (a more realistic assumption).
+
+Since we assume uniform distribution over $\mathcal{B}$, in each measurement we observe one of $K$ signals $x_1,\ldots,x_K\in\R^L$, each corresponds to some random rotation of $x$ on the grid  $$\mathcal{L}_j:=\{j,\frac{K+j}{B},\frac{2K+j}{B},\ldots,\frac{(L-1)K+j}{B}\}$$ for some $j=0,\ldots,K-1$.
+Now, since all rotations of $x_j$ have the same bispectrum, and each sub-signal is equally likely to appear, the  
+average bispectrum of $y$ is the average of the bispectra of all sub-signals, that is,$$B_y = \frac{1}{K}\sum_{i=0}^{K-1}B_{x_i}\in\R^{L\times L}.$$ 
+ Therefore, from Bandeira et al. we conclude the generically we can recover the $K$ bispectra, up to permutation, as long as $K\leq L/6$, or $K\leq \sqrt{B/6}$.
+
+\begin{claim} \label{claim1}
+Under the discrete periodic model, one can sub-sample the signal by a factor of  	$K\leq \sqrt{B/6}$ and retrieve $x_1,\ldots,x_K$, up to shift and permutation. 
+\end{claim}	
+
+\begin{conj} \label{conj1}
+	Under the discrete-periodic signal, one can sub-sample by a factor of  	$K\leq \sqrt{B/6}$ and retrieve  $x$ on the grid $\mathcal{B}$, up to shift, under some smoothing condition. \textbf{We should prove this conjecture.}
+\end{conj}	
+
+Now, let us  compute the bispectrum explicitly. The third-order autocorrelation is given by (by averaging over all shifts $\ell\in\mathcal{L}$, and all rotations $\tau\in\mathcal{B}$)
+\begin{equation}
+\begin{split}
+M_3[n_1,n_2] &= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} y_\tau[\ell] y_\tau[\ell-n_1] y_\tau[\ell-n_2]\\ 
+&= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} x\left(\frac{\ell}{L} + \frac{\tau}{B}\right) x\left(\frac{\ell-n_1}{L} + \frac{\tau}{B}\right)
+x\left(\frac{\ell-n_2}{L} + \frac{\tau}{B}\right)\\
+&= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} 
+\left(\sum_{b_1=-\tB}^{\tB}\hat{x}[b_1]e^{2\pi\I b_1 \left(\frac{\ell-n_1}{L} + \frac{\tau}{B}\right) }\right) 
+\left(\sum_{b_2=-\tB}^{\tB}\hat{x}[b_2]e^{2\pi\I b_2 \left(\frac{\ell-n_2}{L} + \frac{\tau}{B}\right) } \right) \\
+&\times \left(\sum_{b_3=-\tB}^{\tB}\hat{x}[b_3]e^{2\pi\I b_3 \left(\frac{\ell}{L} + \frac{\tau}{B}\right) }\right). 
+\end{split}
+\end{equation}
+By changing the order of the summations, and noting that 
+\begin{equation} \label{eq:sum}
+\frac{1}{B}\sum_{\tau=0}^{B-1}e^{2\pi\I\tau (b_1+b_2+b_3)/B} = \delta_{b_1+b_2+b_3\bmod B},
+\end{equation}
+we get 
+\begin{equation}
+\begin{split}
+M_3[n_1,n_2] = 
+\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)\bmod B]e^{-2\pi\I (b_1n_1 + b_2n_2)/L}.
+\end{split}
+\end{equation}
+This expression can be understood in the Fourier domain by taking the $L\times L$ points DFT: 
+\begin{equation} \label{eq:mix_bispectra}
+\begin{split}
+\hat{M_3}[q_1,q_2] &= \sum_{n_1=0}^{L-1} \sum_{n_2=0}^{L-1}
+M_3[n_1,n_2]e^{-2\pi\I(n_1q_1+n_2q_2)/L} \\ &=  
+\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)\bmod B]e^{-2\pi\I (n_1(b_1+q_1) + n_2(b_2+q_2))} \\ & = \sum_{s=0}^{K-1} \sum_{t=0}^{K-1} \hat{x}[(q_1 + tL)\bmod L] \hat{x}[(q_2 + sL)\bmod L]\hat{x}[(-q_1-q_2 - (s+t)L)\bmod L].
+\end{split}
+\end{equation}
+\begin{cor}
+	By Claim~\ref{claim1}, a mix of bispectra of the form~\eqref{eq:mix_bispectra} can be decomposed to $K$ bispectra up to permutation as long as $K\sim\sqrt{B}$. If Conjecture~\ref{conj1} is true, then it determines $x$ uniquely under some smoothness prior.  
+\end{cor}
+
+\section{Finer discretization and removing the periodicity in Fourier}
+
+Now, we want to examine what happens when we replace $\mathcal{B}$ with a finer grid by some integer $p\geq 1$, while fixing the sampling grid $\mathcal{L}_0$. 
+In this case, we can write  the third-order autocorrelation and get 
+\begin{equation}
+\begin{split}
+M_3[n_1,n_2] 
+&= \frac{1}{LBp}\sum_{\tau=0}^{pB-1}\sum_{\ell=0}^{L-1} 
+\left(\sum_{b_1=-\tB}^{\tB}\hat{x}[b_1]e^{2\pi\I b_1 \left(\frac{\ell-n_1}{L} + \frac{\tau}{pB}\right) }\right) 
+\left(\sum_{b_2=-\tB}^{\tB}\hat{x}[b_2]e^{2\pi\I b_2 \left(\frac{\ell-n_2}{L} + \frac{\tau}{pB}\right) } \right) \\
+&\times \left(\sum_{b_3=-\tB}^{\tB}\hat{x}[b_3]e^{2\pi\I b_3 \left(\frac{\ell}{L} + \frac{\tau}{pB}\right) }\right). 
+\end{split}
+\end{equation}
+Similarly to~\eqref{eq:mix_bispectra}, we have
+\begin{equation} \label{eq:sum2}
+\frac{1}{pB}\sum_{\tau=0}^{pB-1}e^{2\pi\I\tau (b_1+b_2+b_3)/pB} = \delta_{b_1+b_2+b_3\bmod pB},
+\end{equation}
+and hence we get the constraint $$b_3=(-b_1-b_2)\bmod pB=-b_1-b_2,$$
+where the last equality follows from the range of $b_1,b_2$.
+This implies that we get the same bispectrum as in~\eqref{eq:mix_bispectra}, without the wrapped-around of the frequencies. As long as we assume that the spectrum of $x$ is $B$-periodic, then we get exactly the same expression. 
+In other words, even if we let $\theta$ to rotated on a fine grid (with an arbitrary over-sampling factor $p$), then the averaged bispectra remains unchanged.
+This follows the intuition that if the signal is band-limited, then the taking more and more samples does not make a difference. 
+
+What happens if we remove the periodicity assumption in the frequency domain? In this case, the bispectrum remains as in~\eqref{eq:mix_bispectra}, however, many of its entries will be zero (for all indices $\vert b_1+b_2\vert \geq \tB$). The results from Bandiera et al. do not hold anymore in this case. Yet, we can safely conjecture that the $\sqrt{B}$ factor remains true in this case (which is, in fact, easier).  
+
+
+\section{Back to the continuous setup}
+
+By taking $p\to\infty$ we let the grid to rotate freely on the circle. Therefore, in the continuous setting we need to acquire $L\sim\sqrt{B}$ samples. Note also that indeed the expression~\eqref{eq:mix_bispectra} coincides with the expression we got in the continuous setting in a previous note.
+
+\section{Replacing the point-wise sampling by averaging}
+
+A more realistic sampling process averages over $L$  intervals of length $1/L$, rather than takes point-wise samples.  
+In this model, each measurement is given by 
+\begin{equation}
+y_\tau[\ell] = \int_{\ell/L}^{(\ell+1)/L}x\left(\eta + \frac{\tau}{B}\right)d\eta.
+\end{equation}
+The third-order autocorrelation is then given by 
+\begin{equation}
+\begin{split}
+M_3[n_1,n_2] &= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} y_\tau[\ell] y_\tau[\ell-n_1] y_\tau[\ell-n_2]\\ 
+&= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} \left(\int_{\ell/L}^{(\ell+1)/L}x\left(\eta_0 + \frac{\tau}{B}\right)d\eta_0\right)
+\left(\int_{(\ell-n_1)/L}^{(\ell-n_1+1)/L}x\left(\eta_1 + \frac{\tau}{B}\right)d\eta_1\right) \\ 
+&\times 
+\left(\int_{(\ell-n_2)/L}^{(\ell-n_2+1)/L}x\left(\eta_2 + \frac{\tau}{B}\right)d\eta_2\right)
+\\
+&= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} 
+\left(\int_{(\ell-n_1)/L}^{(\ell-n_1+1)/L}\sum_{b_1=-\tB}^{\tB}\hat{x}[b_1]e^{2\pi\I b_1 \left(\eta_1 + \frac{\tau}{B}\right) } d\eta_1\right) \\&\times 
+\left(\int_{(\ell-n_2)/L}^{(\ell-n_2+1)/L}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_2]e^{2\pi\I b_2 \left(\eta_2 + \frac{\tau}{B}\right) } d\eta_2\right) \\&\times 
+\left(\int_{(\ell)/L}^{(\ell+1)/L}\sum_{b_0=-\tB}^{\tB}\hat{x}[b_0]e^{2\pi\I b_0 \left(\eta_0 + \frac{\tau}{B}\right) } d\eta_0\right).
+\end{split}
+\end{equation}
+By replacing order of sums and integrals, and using~\eqref{eq:sum} it reduces to 
+\begin{equation}
+\begin{split}
+M_3[n_1,n_2] 
+&= \frac{1}{L}\sum_{\ell=0}^{L-1}\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB} \hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2] \\
+&\times \int_{(\ell-n_1)/L}^{(\ell-n_1+1)/L}
+\int_{(\ell-n_2)/L}^{(\ell-n_2+1)/L}
+\int_{\ell/L}^{(\ell+1)/L}
+e^{-2\pi\I b_1(\eta_1-\eta_0) } 
+e^{-2\pi\I b_2(\eta_2-\eta_0) }
+ d\eta_1  d\eta_2 d\eta_0.
+\end{split}
+\end{equation}
+Now, by changing variables $\tilde \eta_1=\eta_1-\eta_0$, and $\tilde \eta_2=\eta_2-\eta_0$ we note that the ranges of the new variables are simply $[n_1/L,(n_1+1)/L)$ and $[n_2/L,(n_2+1)/L)$, respectively. 
+Thus, 
+\begin{equation}
+\begin{split}
+M_3[n_1,n_2] 
+&= \sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB} \hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2]
+f(n_1;b_1)f(n_2;b_2)
+\end{split}
+\end{equation}
+where $f(n_1;b_1):=\int_{n/L}^{(n+1)/L}e^{-2\pi\I b\eta}d\eta.$
+
+\end{document}
+
