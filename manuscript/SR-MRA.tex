@@ -7,15 +7,24 @@
 \usepackage[margin=1in]{geometry}
 \newcommand{\I}{\iota}
 \newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
 %\newcommand{\tB}{\tilde{B}}
 \newcommand{\tB}{B_w}
+\newcommand{\hx}{\hat{x}}
+\newcommand{\E}{\mathbb{E}}
 
+\usepackage{color}
+\newcommand{\TODO}[1]{{\color{red}{[#1]}}}
+
+
+\newtheorem{mytheorem}{Theorem}
 \numberwithin{equation}{section}
+\numberwithin{mytheorem}{section} % important bit
+\newtheorem{claim}[mytheorem]{Claim}
+\newtheorem{conj}[mytheorem]{Conjecture}
+\newtheorem{cor}[mytheorem]{Corollary}
+\newtheorem{prop}[mytheorem]{Proposition}
 
-\newtheorem{claim}{Claim}
-\newtheorem{conj}{Conjecture}
-\newtheorem{cor}{Corollary}
-\newtheorem{prop}{Proposition}
 
 \begin{document}
 
@@ -84,7 +93,7 @@ The main goal of this work is to analyze the conditions enabling accurate estima
 In this work, we focus on the third-moment---the bispectrum---and thus $N$ should be, at least, proportional to $\sigma^6$. In Section XXX we discuss the implication of using higher moments. Hence, we now proceed to analyze the how many samples are required for a given band-width. 
 
 
-\section{Analysis of discrete super-resolution}
+\section{Analysis}
 
 We begin by analyzing the discrete setting~\eqref{eq:discrete_model}. For the analysis, we split the discrete signal $x_B\in\mathbb{R}^B$ into $K$ signals, denoted by $x_0,\ldots,x_{K-1}\in\mathbb{R}^L$ as follows:
 \begin{eqnarray}
@@ -106,10 +115,11 @@ B_{y^d} &= \frac{1}{K}\sum_{i=1}^K (B_{x_i} +\mu_{x_i}\sigma^2L^2 A ), \nonumber
 where $\mathbf{1}\in\mathbb{R}^L$ is a vector of ones, and $A\in\mathbb{R}^{L\times L}$ is a zero matrix except $A[0,0]=3$ and $A[i,0]=A[0,i]=A[i,i]=1$ for $i=1,\ldots,L-1$.
 Given $\sigma^2$, one can debias the invariant estimations and the problem reduces to the question of demixing.
 
-Recovering the set of $K$ signals from the invariants~\eqref{eq:mix_invariants} was studied~\cite{bandeira2017estimation}. In this work, it was shown that $K$ generic signals can be recovered from~\eqref{eq:mix_invariants}, up to permutation and cyclic shifts, as long as 
+Recovering the set of $K$ signals from the invariants~\eqref{eq:mix_invariants} was studied~\cite{bandeira2017estimation}. In this work, it was shown that $K$ generic signals can be recovered from~\eqref{eq:mix_invariants}, up to permutation and cyclic shifts, as long as $K<\mathcal{P}(L)$ where
 \begin{equation} \label{eq:Pl}
-\mathcal{P}(L) := \frac{L+3+\left\lfloor L/2\right\rfloor +  \left\lceil (L-1)(L-2)/6\right\rceil}{L+1} > K.
+\mathcal{P}(L) := \frac{L+3+\left\lfloor L/2\right\rfloor +  \left\lceil (L-1)(L-2)/6\right\rceil}{L+1}.
 \end{equation}
+For $K\geq 5$, it suffices to require $K\leq \frac{L+5}{6}$. 
 Since $\mathcal{P}(L) \approx L/6$, we conclude that the bound on the down-sampling factor scales as $\sqrt{B/6}$.
 This bound was proved (by computational tools) for $K\leq 15$, and was conjectured to hold true for any $K$~\cite{bandeira2017estimation}.
 
@@ -126,15 +136,63 @@ If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true a
 
 It is important to note that Proposition~\eqref{prop1} is theoretical in the sense that it is not clear whether the bound~\eqref{eq:Pl} can be achieved computationally.  
 This question was studied empirically in~\cite{boumal2018heterogeneous}. Numerical evidences suggest that the maximal number of signals that can recovered, up cyclic shifts and permutation, from~\eqref{eq:mix_bispectra} is $\sqrt{L}$. If this is true, then the number of signals that can be computationally 
-demixed is $K\leq \sqrt{L}$, or, $K\sim B^{1/3}$. 
+demixed is $K\leq \sqrt{L}$, or, $K\sim B^{1/3}$.  \TODO{Alex's thesis}.
 
-Proposition~\ref{prop1} suggests that all entries of the underlying signal can be recovered in the regime of~\eqref{eq:Pl}. However, there is a combinatorial number of different ways to order $x_1,\ldots,x_K$ 
+Proposition~\ref{prop1} suggests that all entries of the underlying signal can be recovered in the regime of~\eqref{eq:Pl}. However, there are $(L^K)\cdot K!$ \TODO{check this number}  different ways to order the signals $x_1,\ldots,x_K$. Hence, to guarantee unique recovery of the signal one must impose some prior on the signal, such as smoothness. In the following... 
+
+\begin{prop} \label{prop:bandlimit}
+If $x$ is a generic bandlimited signal, then there is only one unique ordering of~\eqref{eq:set_signals} which obeys this bandlimit. 
+\end{prop}	
+\begin{proof}
+	See Appendix XXX.
+\end{proof}
 
 \begin{conj} \label{conj1}
 	Under the discrete-periodic signal, one can sub-sample by a factor of  	$K\leq \sqrt{B/6}$ and retrieve  $x$ on the grid $\mathcal{B}$, up to shift, under some smoothing condition. \textbf{We should prove this conjecture.}
 \end{conj}	
 
-Now, let us  compute the bispectrum explicitly. The third-order autocorrelation is given by (by averaging over all shifts $\ell\in\mathcal{L}$, and all rotations $\tau\in\mathcal{B}$)
+We are now turning our attention to explicit computation of the moments as a function of the Fourier coefficients of $x$ (the high-resolution signal). This computation will serve to move from the discrete setting to the continuous one. To differ it from the  
+
+We start by computing the mean, which is defined as the expected mean of the measurements: 
+\begin{equation}
+\begin{split}
+M_1 = \E\left\{ \frac{1}{L} \sum_{\ell=0}^{L-1} y^d[\ell]\right\} =  \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} y^d[\ell] =  \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1}
+\sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b \left(\frac{\ell}{L} + \frac{\tau}{B}\right) }.
+\end{split}
+\end{equation}
+Since $\frac{1}{B}\sum_{\tau=0}^{B-1}e^{2\pi\I b \tau/B}=\delta_b$, we conclude that 
+\begin{equation} \label{eq:mean}
+\begin{split}
+M_1 = \hx[0].
+\end{split}
+\end{equation}
+This  implies, agreeing with~\eqref{eq:mix_bispectra} that the average over all measurements is just the mean of the signal.  
+
+We can now proceed with the second moment:
+\begin{equation} \label{eq:ps}
+\begin{split}
+M_2[n] &= \E\left\{\frac{1}{L}\sum_{\ell=0}^{L-1} y^d[\ell]y^d[\ell-n]\right\} =  \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} y^d[\ell]y^d[\ell-n] \\ &=  \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1}
+\left(\sum_{b_1=-\tB}^{\tB}\hat{x}[b_1]e^{2\pi\I b_1 \left(\frac{\ell}{L} + \frac{\tau}{B}\right)} \right)
+\left(\sum_{b_2=-\tB}^{\tB}\overline{\hx}[b_2]e^{-2\pi\I b_2 \left(\frac{\ell-n}{L} + \frac{\tau}{B}\right)} \right) \\
+&=
+\sum_{b=-\tB}^{\tB}\vert \hat{x}[b]\vert ^2e^{2\pi\I bn/L}.
+\end{split}
+\end{equation}
+Taking the $L$-points DFT of $M_2$ we get 
+\begin{equation}
+\begin{split}
+P[q] &= \sum_{n=0}^{L-1}M_2[n]e^{-2\pi\I nq/L} = \sum_{b=-\tB}^{\tB}\vert \hat{x}[b]\vert^2\sum_{n=0}^{L-1}e^{-2\pi\I n(q-b)/L}.
+\end{split}
+\end{equation}
+The last term is not zero if and only if $b = q + pL$ for some $p\in\mathbb{Z}$.  Hence, we conclude that the observed power spectrum is a mix of power spectra:
+\begin{equation}
+\begin{split}
+\frac{1}{L}\hat{M}_2[q] &=  \sum_{p=0}^{K-1} \vert \hat{x}[(q+PL)\bmod L]\vert^2.
+\end{split}
+\end{equation}
+
+The more interesting computation is of the bispectrum.
+ The third-order autocorrelation is given by 
 \begin{equation}
 \begin{split}
 M_3[n_1,n_2] &= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} y_\tau[\ell] y_\tau[\ell-n_1] y_\tau[\ell-n_2]\\ 
@@ -160,13 +218,13 @@ M_3[n_1,n_2] =
 This expression can be understood in the Fourier domain by taking the $L\times L$ points DFT: 
 \begin{equation} \label{eq:mix_bispectra}
 \begin{split}
-\hat{M_3}[q_1,q_2] &= \sum_{n_1=0}^{L-1} \sum_{n_2=0}^{L-1}
+B[q_1,q_2] &= \sum_{n_1=0}^{L-1} \sum_{n_2=0}^{L-1}
 M_3[n_1,n_2]e^{-2\pi\I(n_1q_1+n_2q_2)/L} \\ &=  
-\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)\bmod B]e^{-2\pi\I (n_1(b_1+q_1) + n_2(b_2+q_2))} \\ & = \sum_{s=0}^{K-1} \sum_{t=0}^{K-1} \hat{x}[(q_1 + tL)\bmod L] \hat{x}[(q_2 + sL)\bmod L]\hat{x}[(-q_1-q_2 - (s+t)L)\bmod L].
+\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)\bmod B]e^{-2\pi\I (n_1(b_1+q_1) + n_2(b_2+q_2))} \\ & = \sum_{p_1=0}^{K-1} \sum_{p_2=0}^{K-1} \hat{x}[(q_1 + p_1L)\bmod L] \hat{x}[(q_2 + p_2L)\bmod L]\hat{x}[(-q_1-q_2 - (p_1+p_2)L)\bmod L].
 \end{split}
 \end{equation}
 \begin{cor}
-	By Claim~\ref{claim1}, a mix of bispectra of the form~\eqref{eq:mix_bispectra} can be decomposed to $K$ bispectra up to permutation as long as $K\sim\sqrt{B}$. If Conjecture~\ref{conj1} is true, then it determines $x$ uniquely under some smoothness prior.  
+	By Proposition~\ref{prop1}, the set of signals~\eqref{eq:set_signals} are determined uniquely from~\eqref{eq:mean},\eqref{eq:ps} and~\eqref{eq:mix_bispectra}, as long as $\mathcal{P}(B/K)>K$. If Conjecture~\ref{conj1} is true, then it determines $x$ uniquely under some smoothness prior.  
 \end{cor}
 
 \section{Finer discretization and removing the periodicity in Fourier}
@@ -195,9 +253,13 @@ This follows the intuition that if the signal is band-limited, then the taking m
 What happens if we remove the periodicity assumption in the frequency domain? In this case, the bispectrum remains as in~\eqref{eq:mix_bispectra}, however, many of its entries will be zero (for all indices $\vert b_1+b_2\vert \geq \tB$). The results from Bandiera et al. do not hold anymore in this case. Yet, we can safely conjecture that the $\sqrt{B}$ factor remains true in this case (which is, in fact, easier).  
 
 
-\section{Back to the continuous setup}
+%\section{Back to the continuous setup}
 
 By taking $p\to\infty$ we let the grid to rotate freely on the circle. Therefore, in the continuous setting we need to acquire $L\sim\sqrt{B}$ samples. Note also that indeed the expression~\eqref{eq:mix_bispectra} coincides with the expression we got in the continuous setting in a previous note.
+
+\section{An expectation-maximization algorithm}
+
+The method of moments approach is sensitive; EM takes everything into account.
 
 \section{Future work}
 general group actions
@@ -207,54 +269,61 @@ cryo-EM
 higher moments
 
 non-periodic signals 
-%\section{Replacing the point-wise sampling by averaging}
-%
-%A more realistic sampling process averages over $L$  intervals of length $1/L$, rather than takes point-wise samples.  
-%In this model, each measurement is given by 
-%\begin{equation}
-%y_\tau[\ell] = \int_{\ell/L}^{(\ell+1)/L}x\left(\eta + \frac{\tau}{B}\right)d\eta.
-%\end{equation}
-%The third-order autocorrelation is then given by 
-%\begin{equation}
-%\begin{split}
-%M_3[n_1,n_2] &= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} y_\tau[\ell] y_\tau[\ell-n_1] y_\tau[\ell-n_2]\\ 
-%&= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} \left(\int_{\ell/L}^{(\ell+1)/L}x\left(\eta_0 + \frac{\tau}{B}\right)d\eta_0\right)
-%\left(\int_{(\ell-n_1)/L}^{(\ell-n_1+1)/L}x\left(\eta_1 + \frac{\tau}{B}\right)d\eta_1\right) \\ 
-%&\times 
-%\left(\int_{(\ell-n_2)/L}^{(\ell-n_2+1)/L}x\left(\eta_2 + \frac{\tau}{B}\right)d\eta_2\right)
-%\\
-%&= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} 
-%\left(\int_{(\ell-n_1)/L}^{(\ell-n_1+1)/L}\sum_{b_1=-\tB}^{\tB}\hat{x}[b_1]e^{2\pi\I b_1 \left(\eta_1 + \frac{\tau}{B}\right) } d\eta_1\right) \\&\times 
-%\left(\int_{(\ell-n_2)/L}^{(\ell-n_2+1)/L}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_2]e^{2\pi\I b_2 \left(\eta_2 + \frac{\tau}{B}\right) } d\eta_2\right) \\&\times 
-%\left(\int_{(\ell)/L}^{(\ell+1)/L}\sum_{b_0=-\tB}^{\tB}\hat{x}[b_0]e^{2\pi\I b_0 \left(\eta_0 + \frac{\tau}{B}\right) } d\eta_0\right).
-%\end{split}
-%\end{equation}
-%By replacing order of sums and integrals, and using~\eqref{eq:sum} it reduces to 
-%\begin{equation}
-%\begin{split}
-%M_3[n_1,n_2] 
-%&= \frac{1}{L}\sum_{\ell=0}^{L-1}\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB} \hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2] \\
-%&\times \int_{(\ell-n_1)/L}^{(\ell-n_1+1)/L}
-%\int_{(\ell-n_2)/L}^{(\ell-n_2+1)/L}
-%\int_{\ell/L}^{(\ell+1)/L}
-%e^{-2\pi\I b_1(\eta_1-\eta_0) } 
-%e^{-2\pi\I b_2(\eta_2-\eta_0) }
-% d\eta_1  d\eta_2 d\eta_0.
-%\end{split}
-%\end{equation}
-%Now, by changing variables $\tilde \eta_1=\eta_1-\eta_0$, and $\tilde \eta_2=\eta_2-\eta_0$ we note that the ranges of the new variables are simply $[n_1/L,(n_1+1)/L)$ and $[n_2/L,(n_2+1)/L)$, respectively. 
-%Thus, 
-%\begin{equation}
-%\begin{split}
-%M_3[n_1,n_2] 
-%&= \sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB} \hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2]
-%f(n_1;b_1)f(n_2;b_2)
-%\end{split}
-%\end{equation}
-%where $f(n_1;b_1):=\int_{n/L}^{(n+1)/L}e^{-2\pi\I b\eta}d\eta.$
 
+	
+	
 \bibliographystyle{plain}
 \bibliography{ref}
+
+
+\appendix
+
+\section{Proof of Proposition~\ref{prop:bandlimit}}
+Suppose that $x_1,\ldots,x_K\in\R^L$ are known.
+The combined signal is then given by 
+\begin{equation}
+x = \sum_{i=1}^K T_kZR_kx_k,
+\end{equation}
+where $R_k$ are (unknown) cyclic shifts of the signals $x_k$, $Z$ denotes a zero-padding operator (by a factor of $K$) so that $Zx_k\in\mathbb{R}^B$, and $T_k$ shifts the zero-padded signals by $k$ entries for $k=0,\ldots, K-1$. 
+For instance, for $K=3$ we have: 
+\begin{equation}
+Zx = (x[0],0,0,x[1],0,0,x[2],...)\in\mathbb{R}^B.
+\end{equation}
+
+The Fourier transform of a signal $u\in\mathbb{R}^{L}$ is defined by 
+\begin{equation}
+\hat{u}[m]=\sum_{\ell=0}^{L-1}u[\ell]e^{-2\pi\I m\ell /L}, \quad m=0,\ldots,L-1. 
+\end{equation}
+The Fourier transform of $Zu$ is then given by 
+\begin{equation}
+\widehat{(Zu)}[m] = \sum_{\ell=0}^{L-1}u[\ell]e^{-2\pi\I m\ell /(B/K)}, \quad m=0,\ldots,B-1.
+\end{equation}
+In other words, $\widehat{(Zu)}[m] = \hat{u}[m\bmod L]$.
+
+
+The Fourier transform of $ZR_{r_k}u$ is  given by 
+\begin{equation}
+\widehat{(ZR_{r_k}u)}[m] = e^{-2\pi\I m r_k L} \hat{u}[m\bmod L], \quad m=0,\ldots,B-1.
+\end{equation}
+for 
+This signal is shifted once again and we get
+\begin{eqnarray} \label{eq:Fourier_structure}
+\hat{x}[m] = \sum_{k=1}^K e^{-2\pi\I m( p_k+r_k K)/B} \hat{x}_k[m \bmod L] := \sum_{k=1}^K E[m,k] \hat{x}_k[m \bmod L]
+\end{eqnarray}
+for $m=0,\ldots,B-1$, 
+where $r_k$ is a chosen randomly uniformly over $\{0,\ldots,L-1\}$, independently for each $k$, and $p_k$ represents the permutations, that is, $p_k\in\{0,\ldots K-1\}$, $p_k\neq t_\ell$ for all $k\neq \ell$ (note that we do have the freedom to fix one signal and its shift). 
+
+By assumption, there exists at least one entry for which
+$\hx[m]=0$. We also note that for fixed $m$, all entries   
+$E[m,k]$ are not equal to each other. 
+
+% the system can be written in matrix-vector multiplication. In particular, we write 
+%\begin{equation}
+%\hat{x} = X_k E,
+%\end{equation} 
+%where $\hat{x}\in\C^B$, each column of the matrix $X_K\in\C^{B\times K}$ is $\hat{x}_k[m \bmod L]$, 
+%and $E\in\C^{K}
+
 
 \end{document}
 
