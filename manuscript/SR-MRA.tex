@@ -135,8 +135,12 @@ If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true a
 \end{prop}	
 
 It is important to note that Proposition~\eqref{prop1} is theoretical in the sense that it is not clear whether the bound~\eqref{eq:Pl} can be achieved computationally.  
-This question was studied empirically in~\cite{boumal2018heterogeneous}. Numerical evidences suggest that the maximal number of signals that can recovered, up cyclic shifts and permutation, from~\eqref{eq:mix_bispectra} is $\sqrt{L}$. If this is true, then the number of signals that can be computationally 
-demixed is $K\leq \sqrt{L}$, or, $K\sim B^{1/3}$.  \TODO{Alex's thesis}.
+This question was studied empirically in~\cite{boumal2018heterogeneous}. Numerical evidences suggest that the maximal number of signals that can recovered, up cyclic shifts and permutation, from~\eqref{eq:mix_bispectra} is $\sqrt{L}$. 
+Strong theoretical support was provided in~\cite{weinthesis}. In particular,  it was proven that $K$ signals whose entries i.i.d.\ Gaussians can be recovered with high probability from their mixed bispectrum as long as $k\leq \sqrt{L}/\text{polylog}(L)$.
+In this case,the number of signals that can be computationally 
+demixed scales as $K\leq \sqrt{L}$, or, $K\sim B^{1/3}$ (up to log factors).  
+
+
 
 Proposition~\ref{prop1} suggests that all entries of the underlying signal can be recovered in the regime of~\eqref{eq:Pl}. However, there are $(L^K)\cdot K!$ \TODO{check this number}  different ways to order the signals $x_1,\ldots,x_K$. Hence, to guarantee unique recovery of the signal one must impose some prior on the signal, such as smoothness. In the following... 
 
@@ -147,9 +151,13 @@ If $x$ is a generic bandlimited signal, then there is only one unique ordering o
 	See Appendix XXX.
 \end{proof}
 
-\begin{conj} \label{conj1}
-	Under the discrete-periodic signal, one can sub-sample by a factor of  	$K\leq \sqrt{B/6}$ and retrieve  $x$ on the grid $\mathcal{B}$, up to shift, under some smoothing condition. \textbf{We should prove this conjecture.}
-\end{conj}	
+	From Propositions~\ref{prop1} and~\ref{prop:bandlimit} we can conclude the following:
+\begin{cor}
+Unique ordering. Implications to band-limited signals.
+\end{cor}
+%\begin{conj} \label{conj1}
+%	Under the discrete-periodic signal, one can sub-sample by a factor of  	$K\leq \sqrt{B/6}$ and retrieve  $x$ on the grid $\mathcal{B}$, up to shift, under some smoothing condition. \textbf{We should prove this conjecture.}
+%\end{conj}	
 
 We are now turning our attention to explicit computation of the moments as a function of the Fourier coefficients of $x$ (the high-resolution signal). This computation will serve to move from the discrete setting to the continuous one. To differ it from the  
 
@@ -264,7 +272,7 @@ The method of moments approach is sensitive; EM takes everything into account.
 \section{Future work}
 general group actions
 
-cryo-EM
+cryo-EM~\cite{chen2018single}.
 
 higher moments
 
