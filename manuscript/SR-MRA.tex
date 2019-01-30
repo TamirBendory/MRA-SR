@@ -304,9 +304,26 @@ The signal's estimation is usually initialized randomly.
 Each EM iteration consists of two steps.
 The first, called the E-step, computes the expected value of the likelihood function  given the current estimate of the signal $x_t$ and the data $y_1,\ldots,y_N$
 \begin{equation}
-Q(x|x_t) = \E_{\theta|y_i,x_t}\left\{\ \log \mathcal{L}(y,\theta|x_t).   \right\}
+\begin{split}
+Q(x|x_t) &= \E_{\theta|y_i,x_t}\left\{\ \log \mathcal{L}(y_1,\ldots,y_N,\theta|x_t).   \right\} \\
+& = -\frac{1}{2\sigma^2}\sum_{i=1}^{N}\sum_{\tau\in\mathcal{T}}w_{i,\tau}\|y_i - PR_{\tau}x\| - \frac{1}{2}x^T\Sigma^{-1}x,
+\end{split}
 \end{equation} 
-How to compute the expectation?
+where 
+\begin{equation} \label{eq:em_weights}
+w_{i,\tau} = P[\theta_i = \tau] = \frac{e^{\frac{-1}{2\sigma^2}\|y_i-PR_\tau x_t\|^2 }}{\sum_{\tau\in\mathcal{T}}e^{\frac{-1}{2\sigma^2}\|y_i-PR_\tau x_t\|^2 }}.
+\end{equation}
+Then, second step is to maximize $Q$ with respect to $x$. In that case, the solution is obtained bu solving the linear system of equations
+\begin{equation} \label{eq:em_linear_system}
+Ax = b,
+\end{equation}
+where 
+\begin{align}
+A :=&  \Sigma^{-1} + \frac{1}{\sigma^2}\sum_{i,\tau}\omega_{i,\tau} (R_\tau^{-1}P^TPR_\tau),\\ 
+b :=&   \frac{1}{\sigma^2} \sum_{i,\tau}\omega_{i,\tau}R_\tau^{-1}P^Ty_i.
+\end{align}
+\TODO{These expression are for general linear operator; for our specific case many steps can be implemented using fft.}
+The EM is then iterate between computing the weights~\eqref{eq:em_weights} and solving the linear system~\eqref{eq:em_linear_system}.
 
 \section{Numerical results}
 
