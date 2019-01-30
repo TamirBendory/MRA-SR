@@ -301,8 +301,13 @@ Hence,  a simple calculation shows that (up to a constant) the log-likelihood   
 \end{equation}
 The algorithm aims to compute the MMLE by marginalizing over the the rotations  $\log \mathcal{L}(y|x)  = \sum_{\theta\in\mathcal{T}}\log \mathcal{L}(y|\theta,x)$. Computing the MMLE directly is intractable as one need to evaluate the an exponential number of combinations of rotations. The EM suggests to try to obtain the MMLE iteratively. 
 
- 
-
+The signal's estimation is usually initialized randomly. 
+Each EM iteration consists of two steps.
+The first, called the E-step, computes the expected value of the likelihood function  given the current estimate of the signal $x_t$ and the data $y_1,\ldots,y_N$
+\begin{equation}
+Q(x|x_t) = \E_{\theta|y_i,x_t}\left\{\ \log \mathcal{L}(y,\theta|x_t).   \right\}
+\end{equation} 
+How to compute the expectation?
 
 \section{Numerical results}
 
