@@ -12,6 +12,8 @@
 \newcommand{\tB}{B_w}
 \newcommand{\hx}{\hat{x}}
 \newcommand{\E}{\mathbb{E}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\SR}{super-resolution }
 
 \usepackage{color}
 \newcommand{\TODO}[1]{{\color{red}{[#1]}}}
@@ -41,57 +43,55 @@ Discuss classical super-resolution, multi-reference alignment, bispectrum, the e
 
 \section{Model}
 
-We assume to collect $N$ independent observations from the model 
+We first describe the  \emph{continuous \SR model}, which is the main subject of this paper.  In this model,
+we assume to collect $N$ independent observations from the model 
 \begin{equation} \label{eq:model}
 y = PR_\theta x + \varepsilon,
 \end{equation}
-%so that 
-%\begin{equation}
-%y_i = PR_{\theta_i} x_i + \varepsilon_i, \quad i=1,\ldots,N.
-%\end{equation}
 where $x\in S^1$ is a signal on the circle, $R_\theta$ denotes a random, unknown rotation, and $\theta$ is distributed uniformly $\theta\sim \text{Uniform}[0,1)$. 
-The noise is assumed to be normal i.i.d.\  $\varepsilon\sim\mathcal{N}(0,\sigma^2 I)$.
+The noise term is composed of  i.i.d.\  Gaussian entries  $\varepsilon\sim\mathcal{N}(0,\sigma^2 I)$, where $\sigma^2$ is assumed to be known.
 In this work, we mainly focus on the high noise regime in which $\sigma$ is greater than $\|x\|_2$. 
 Following the rotation, the operator $P$ collects $L$ equally-spaced samples of the signal. Thus, the recorded samples of the $i$th measurement are given by 
 \begin{equation} \label{eq:continuous_measurements}
-y_i[\ell] = \left(R_{\theta_i} x\right)[\ell] + \varepsilon_i[\ell], \quad \ell=0,\ldots,L-1.
+y_i[\ell] = \left(R_{\theta_i} x\right)[\ell] + \varepsilon_i[\ell] =  x[\ell/L+\theta_i] + \varepsilon_i[\ell], \quad \ell=0,\ldots,L-1.
 \end{equation}
-Throughout, we assume that $\sigma^2$. In many applications, the variance of the noise can be estimated accurately from the samples, or is known apriori. %Specifically for~\eqref{eq:model} the variance can be estimated by
 
-The underlying  signal  is assumed to be band-limited so it can be expanded in a finite Fourier expansion 
+Without any assumption on the structure of the signal, one cannot hope to recover it from finite samples. In this work we suppose that 
+the underlying  signal  is bandlimited. Therefore, it can be  be expanded as 
 \begin{eqnarray} \label{eq:fourier_expansion}
-x(t) = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I bt }. \quad t\in[0,1),
+x(t) = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I bt }, \quad t\in[0,1).
 \end{eqnarray}
-We are interested the interplay between the number of samples $L$ and the signal's band-width $B := 2\tB+1$. We denote this ratio by  $LK=B$ for some \emph{down-sampling factor} $K\in\mathbb{Z}_{>0}$.  
-This model, for which we refer to as the \emph{continuous SR model}, is the main subject of this paper. 
+Finite bandlimit (frequently called, finite bandwidth) is a standard assumption is many data processing applications, and in particular in structural biology \TODO{REF}. 
+
+The classical sampling theory, usually called Shannon-Nyquist sampling theorem, states that sampling rate of the signal should be at least twice its bandwidth~\cite{shannon1949communication} (for a recent comprehensive survey of modern sampling theory; see~\cite{eldar2015sampling}) \TODO{This might be in the introduction}. 
+We are interested the interplay between the number of samples $L$ and  $B := 2\tB+1$. We denote this ratio by  $LK=B$ for some \emph{\SR factor} $K\in\mathbb{Z}_{>0}$.  
 
 
-In addition to the continuous case, we consider the \emph{discrete SR model}. 
-In this model, we allow $\theta$ to rotate only on a grid over $S^1$ defined by  $$\mathcal{B}:=\left\{0,\frac{1}{B},\ldots\frac{B-1}{B}\right\}.$$
-In each measurement, the signal is rotated uniformly over  $\mathcal{B}$, and then sampled on a coarser grid 
-\begin{equation} \label{eq:grid_L}
-\mathcal{L}_0:=\left\{0,\frac{K}{B},\frac{2K}{B},\ldots,\frac{(L-1)K}{B}\right\}.
+In addition to the continuous case, we consider the \emph{discrete \SR model}. Let us denote by $\T_T\subset S^1$ the equally-spaced grid 
+\begin{equation} \label{eq:grid}
+\mathcal{T}:=\left\{0,\frac{1}{T},\ldots\frac{T-1}{T}\right\}.
 \end{equation}
-
-Under this model, the samples of the $i$th measurement can be then written as
+In the discrete mode we study the case where $\theta$ is rotated on $\T_B$ and then sampled on $\T_{B/K}=\T_{L}$.
+Under this model, the samples of the $i$th measurement can be  written as
 \begin{equation}
 y_i[\ell] = x\left(\frac{\ell K+\tau}{B}\right)=x\left(\frac{\ell}{L} + \frac{\tau}{B}\right), \quad \ell=0,\ldots L-1,
 \end{equation}
 for some random $\tau\in\{0,\ldots B-1\}$. 
-We also note that according to~\eqref{eq:fourier_expansion},  $y$ can be expanded by a Fourier series as
+In this case, $y$ can be expanded by a Fourier series as
 \begin{eqnarray}
 y_\tau[\ell] = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b \left(\frac{\ell}{L} + \frac{\tau}{B}\right) }.
 \end{eqnarray}
 
-The discrete model can be formulate conveniently in a matrix-vector notation as  
+The discrete model can be formulated conveniently in a matrix-vector notation as  
 \begin{equation} \label{eq:discrete_model}
 y^d = P_BR_{\theta_\mathcal{B}} x^d + \varepsilon,
 \end{equation}
-where $x^d\in\mathbb{R}^{B}$ is the restriction of $x$ to $\mathcal{B}$, $R_{\theta_\mathcal{B}}$ is a circular shift (uniformly distributed) on $\mathcal{B} $and the sampling operator $P_B\in\mathbb{R}^{B\times B}$ can be thought of as a diagonal matrix, whose diagonal is composed of 1's every other $K$ entry, and zero otherwise
+where $x^d\in\mathbb{R}^{B}$ is the restriction of $x$ to $\T_B$, $R_{\theta_B}$ is a circular shift (uniformly distributed) over  $\T_B$ and the sampling operator $P_B\in\mathbb{R}^{B\times B}$ is a diagonal matrix, whose diagonal is composed of 1's every other $K$ entry, and zero otherwise
 
-The main goal of this work is to analyze the conditions enabling accurate estimate of $x$ in the continuous and discrete models in high noise regimes. As we show, accurate recovery depends on the relations between two pairs of parameters: the number of measurements as a function of the noise level, and the number of required samples as a function of the signal's band-width. Since our analysis is based on the method of moments, the required number of measurements scales asymptotically as $\sigma^{2d}$, where $d$ is the higher-order moment used~\cite{abbe2018estimation,bandeira2017estimation}. 
-In this work, we focus on the third-moment---the bispectrum---and thus $N$ should be, at least, proportional to $\sigma^6$. In Section XXX we discuss the implication of using higher moments. Hence, we now proceed to analyze the how many samples are required for a given band-width. 
-
+The main goal of this work is to analyze the conditions enabling accurate estimate of $x$ in the continuous and discrete models in high noise regimes. As we show, accurate recovery depends on to ratios: the number of measurements as a function of the noise level, and the number of required samples as a function of the signal's bandwidth. Since our analysis is based on the method of moments, the required number of measurements scales asymptotically as $\sigma^{2d}$, where $d$ is the higher-order moment used~\cite{abbe2018estimation,bandeira2017estimation}. 
+In this degree we use the lowest-order moment possible for \SR---the bispectrum. Lower order moments do not suffice to determine a signal uniquely, a fortiori for \SR. Using the bispectrum requires the number of measurements $N$ to scale, at least, as $\sigma^6$. 
+As discussed in Section~\ref{sec:future_work}, if more measurements are available, one use higher moments to resolve even higher frequencies. 
+\TODO{I am using moments/invariants interchangeably}
 
 \section{Analysis}
 
@@ -328,7 +328,7 @@ The EM is then iterate between computing the weights~\eqref{eq:em_weights} and s
 \section{Numerical results}
 
 
-\section{Future work}
+\section{Future work} \label{sec:future_work}
 general group actions
 
 cryo-EM~\cite{chen2018single}.
