@@ -17,13 +17,13 @@
 \newcommand{\TODO}[1]{{\color{red}{[#1]}}}
 
 
-\newtheorem{mytheorem}{Theorem}
+\newtheorem{thm}{Theorem}
 \numberwithin{equation}{section}
-\numberwithin{mytheorem}{section} % important bit
-\newtheorem{claim}[mytheorem]{Claim}
-\newtheorem{conj}[mytheorem]{Conjecture}
-\newtheorem{cor}[mytheorem]{Corollary}
-\newtheorem{prop}[mytheorem]{Proposition}
+\numberwithin{thm}{section} % important bit
+\newtheorem{claim}[thm]{Claim}
+\newtheorem{conj}[thm]{Conjecture}
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{prop}[thm]{Proposition}
 
 
 \begin{document}
@@ -53,7 +53,7 @@ where $x\in S^1$ is a signal on the circle, $R_\theta$ denotes a random, unknown
 The noise is assumed to be normal i.i.d.\  $\varepsilon\sim\mathcal{N}(0,\sigma^2 I)$.
 In this work, we mainly focus on the high noise regime in which $\sigma$ is greater than $\|x\|_2$. 
 Following the rotation, the operator $P$ collects $L$ equally-spaced samples of the signal. Thus, the recorded samples of the $i$th measurement are given by 
-\begin{equation}
+\begin{equation} \label{eq:continuous_measurements}
 y_i[\ell] = \left(R_{\theta_i} x\right)[\ell] + \varepsilon_i[\ell], \quad \ell=0,\ldots,L-1.
 \end{equation}
 Throughout, we assume that $\sigma^2$. In many applications, the variance of the noise can be estimated accurately from the samples, or is known apriori. %Specifically for~\eqref{eq:model} the variance can be estimated by
@@ -144,22 +144,20 @@ demixed scales as $K\leq \sqrt{L}$, or, $K\sim B^{1/3}$ (up to log factors).
 
 
 
-Proposition~\ref{prop1} suggests that all entries of the underlying signal can be recovered in the regime of~\eqref{eq:Pl}. However, there are $(L^K)\cdot K!$ \TODO{check this number}  different ways to order the signals $x_1,\ldots,x_K$. Hence, to guarantee unique recovery of the signal one must impose some prior on the signal, such as smoothness. In the following... 
+Proposition~\ref{prop1} suggests that all entries of the underlying signal can be recovered in the regime of~\eqref{eq:Pl}. However, there are $(L^K)\cdot K!$ \TODO{check this number}  different ways to order the signals $x_1,\ldots,x_K$. Hence, to guarantee unique recovery of the signal one must impose some prior on the signal, such as smoothness. In the following proposition, proved in Appendix~\ref{sec:proof_bandlimit}, we show that
 
 \begin{prop} \label{prop:bandlimit}
-If $x$ is a generic bandlimited signal, then there is only one unique ordering of~\eqref{eq:set_signals} which obeys this bandlimit. 
+If $x$ is a generic signal, then there is only one set of rotations and shift of~\eqref{eq:set_signals} which obeys $\hx[m]=x_m$ for some $m$ and $x_m$.
 \end{prop}	
-\begin{proof}
-	See Appendix XXX.
-\end{proof}
 
-	From Propositions~\ref{prop1} and~\ref{prop:bandlimit} we can conclude the following:
-\begin{cor}
-Unique ordering. Implications to band-limited signals.
-\end{cor}
-%\begin{conj} \label{conj1}
-%	Under the discrete-periodic signal, one can sub-sample by a factor of  	$K\leq \sqrt{B/6}$ and retrieve  $x$ on the grid $\mathcal{B}$, up to shift, under some smoothing condition. \textbf{We should prove this conjecture.}
-%\end{conj}	
+Our main interest is in bandlimited signals for which the spectrum vanished starting from some frequency. Proposition~\ref{prop:bandlimit} implies that there exists only one bandlimited signal that fits the first three moments, under the conditions presented in Proposition~\ref{prop1}. 
+Hence, we conclude the following:
+
+\begin{thm}
+Consider the  discrete periodic model~\eqref{eq:discrete_model} when $N\to\infty$. Suppose that one entry of $\hx$ is known (e.g., $x$ is a bandlimited signal for which many of Fourier coefficients are zero). 
+Then, For $K\leq 15$ and for $\mathcal{P}(B/K)>K$ (given in~\eqref{eq:Pl}), one can identify $x$ up to shift. 
+If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for $K>15$.
+\end{thm}
 
 \subsection{Explicit expressions of the invariants}
 
@@ -236,7 +234,8 @@ M_3[n_1,n_2]e^{-2\pi\I(n_1q_1+n_2q_2)/L} \\ &=
 \end{split}
 \end{equation}
 \begin{cor}
-	By Proposition~\ref{prop1}, the set of signals~\eqref{eq:set_signals} are determined uniquely from~\eqref{eq:mean},\eqref{eq:ps} and~\eqref{eq:mix_bispectra}, as long as $\mathcal{P}(B/K)>K$. If Conjecture~\ref{conj1} is true, then it determines $x$ uniquely under some smoothness prior.  
+	If $K\leq 15$ and $\mathcal{P}(B/K)>K$, then the set of signals~\eqref{eq:set_signals} are determined uniquely from~\eqref{eq:mean},\eqref{eq:ps} and~\eqref{eq:mix_bispectra}. 
+	If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for $K>15$. 
 \end{cor}
 
 \subsection{The continuous model}
@@ -286,7 +285,7 @@ For instance, it is well know that a generic two-dimensional signal can be deter
 Based on that intuition, we conjecture that the same super-resolution factor remains true for the continuous case, possibly with a different constant. 
 
 \begin{conj}
-	content...
+Consider the  continuous periodic model~\eqref{eq:continuous_measurements} when $N\to\infty$, and that $x$ is a B-bandlimited signal, the  one can identify $x$ up to shift as long as $K\leq C \sqrt{B}$, where $C$ is a constant that does not depend on either $K$ or $B$.
 \end{conj}
 
 \section{An expectation-maximization algorithm for super-resolution}
@@ -329,7 +328,7 @@ non-periodic signals
 
 \appendix
 
-\section{Proof of Proposition~\ref{prop:bandlimit}}
+\section{Proof of Proposition~\ref{prop:bandlimit}} \label{sec:proof_bandlimit}
 Suppose that $x_1,\ldots,x_K\in\R^L$ are known.
 The combined signal is then given by 
 \begin{equation}
@@ -359,21 +358,16 @@ The Fourier transform of $ZR_{r_k}u$ is  given by
 for 
 This signal is shifted once again and we get
 \begin{eqnarray} \label{eq:Fourier_structure}
-\hat{x}[m] = \sum_{k=1}^K e^{-2\pi\I m( p_k+r_k K)/B} \hat{x}_k[m \bmod L] := \sum_{k=1}^K E[m,k] \hat{x}_k[m \bmod L]
+\hat{x}[m] = \sum_{k=1}^K e^{-2\pi\I m( p_k+r_k K)/B} \hat{x}_k[m \bmod L]. 
 \end{eqnarray}
 for $m=0,\ldots,B-1$, 
-where $r_k$ is a chosen randomly uniformly over $\{0,\ldots,L-1\}$, independently for each $k$, and $p_k$ represents the permutations, that is, $p_k\in\{0,\ldots K-1\}$, $p_k\neq t_\ell$ for all $k\neq \ell$ (note that we do have the freedom to fix one signal and its shift). 
+where $r_k$ is a chosen randomly uniformly over $\{0,\ldots,L-1\}$, independently for each $k$, and $p_k$ represents the permutations, that is, $p_k\in\{0,\ldots K-1\}$, $p_k\neq p_\ell$ for all $k\neq \ell$ (note that we do have the freedom to fix one signal and its shift). 
 
-By assumption, there exists at least one entry for which
-$\hx[m]=0$. We also note that for fixed $m$, all entries   
-$E[m,k]$ are not equal to each other. 
-
-% the system can be written in matrix-vector multiplication. In particular, we write 
-%\begin{equation}
-%\hat{x} = X_k E,
-%\end{equation} 
-%where $\hat{x}\in\C^B$, each column of the matrix $X_K\in\C^{B\times K}$ is $\hat{x}_k[m \bmod L]$, 
-%and $E\in\C^{K}
+Let us denote the set of rotations and permutation that satisfy the assumption  $\hx[m]=x_m$ by $\tilde{p}_k,\tilde{r}_k$. Let $E_k:=e^{-2\pi\I m( p_k+r_k K)/B}$, $\tilde{E}_k:=e^{-2\pi\I m( \tilde{p}_k+\tilde{r}_k K)/B}$ and $\hx_k:=\hat{x}_k[m \bmod L]$ for fixed $m$. Now, let us assume that there exists another $E_k$ that satisfies the constraint. In this case,
+\begin{equation} \label{eq:inner_product}
+x_m=\left\langle E_k,\hx_k\right\rangle = \left\langle \tilde{E}_k,\hx_k\right\rangle \quad \Rightarrow \quad\left\langle \tilde{E}_k -{E}_k,\hx_k\right\rangle =0.
+\end{equation} 
+For generic $x$, the orthogonal complement of $\hx_k$ is Lebesgue measure zero and therefore~\eqref{eq:inner_product} is not satisfied generically.  
 
 \section{Derivation of the bispectrum in the continuous model} \label{sec:continuous_bispectrum}
 
