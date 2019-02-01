@@ -145,7 +145,8 @@ The identifiability of a set of $K$ signals from the mix of their  invariants~\e
 \end{equation}
 For $K\geq 5$, it suffices to require $K\leq \frac{L+5}{6}$. 
 Since $\mathcal{P}(L) \approx L/6$, we conclude that the minimal number of samples scales as $\sqrt{6B}$. In other words, from $L$ samples, one can approximate  $B=O(L^2)$ frequencies. 
-This bound was proved (by computational tools) for $K\leq 15$, and was conjectured  to hold true for any $K$~\cite[Conjecture 5.4]{bandeira2017estimation}. \TODO{To stress the difference between identify the signals, and recover them.}
+This bound was proved only in the regime $K\leq 15$, and therefore limiting our rigorous proof for the regime of small $L$. 
+However, it was conjectured  to hold true for any $K$~\cite[Conjecture 5.4]{bandeira2017estimation}. \TODO{To stress the difference between identify the signals, and recover them.}
 
 We introduce the set of signals \TODO{to explain where this set comes from}
 \begin{equation}
@@ -156,7 +157,7 @@ for cyclic shifts $R_{\theta_i}$ for $\theta_i=0,\ldots,L-1$, and a permutation 
 \begin{prop} \label{prop1}
 Consider the  discrete periodic model~\eqref{eq:discrete_model} when $N\to\infty$. 
 For $K\leq 15$ and  $\mathcal{P}(L)L>B$, one can identify the set of signals $\mathcal{S}(x_1,\ldots,x_K)$.
-If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for $K>15$.
+If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for any $K$.
 \end{prop}	
 
 It is important to note that Proposition~\eqref{prop1} is theoretical in the sense that it is not clear whether the bound~\eqref{eq:Pl} can be achieved computationally.  
@@ -182,12 +183,12 @@ Hence, we conclude the following:
 \begin{thm} \label{thm:discrete}
 Consider the  discrete periodic model~\eqref{eq:discrete_model} when $N\to\infty$. Suppose that one entry of $\hx$ is known to be zero (e.g., $x$ is a bandlimited signal for which many of Fourier coefficients are zero). 
 Then, For $K\leq 15$ and for $\mathcal{P}(L)L>B$ (given in~\eqref{eq:Pl}), one can identify $x$ uniquely, up to shift. 
-If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for $K>15$.
+If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for any $K$.
 \end{thm}
 
 \subsection{Explicit expressions of the invariants} \label{sec:expressions}
 
-We are now turning our attention to explicit computation of the moments as a function of the Fourier coefficients of $x$ (the high-resolution signal). This computation will serve to move from the discrete setting to the continuous one. To differ it from the  
+We are now turning our attention to explicit computation of the moments as a function of the Fourier coefficients of $x$ (the high-resolution signal). This computation will serve to move from the discrete setting to the continuous one. 
 
 We start by computing the mean, which is defined as the expected mean of the measurements: 
 \begin{equation}
@@ -256,12 +257,12 @@ This expression can be understood in the Fourier domain by taking the $L\times L
 \begin{split}
 B[q_1,q_2] &= \sum_{n_1=0}^{L-1} \sum_{n_2=0}^{L-1}
 M_3[n_1,n_2]e^{-2\pi\I(n_1q_1+n_2q_2)/L} \\ &=  
-\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)\bmod B]e^{-2\pi\I (n_1(b_1+q_1) + n_2(b_2+q_2))} \\ & = \sum_{p_1=0}^{K-1} \sum_{p_2=0}^{K-1} \hat{x}[(q_1 + p_1L)\bmod L] \hat{x}[(q_2 + p_2L)\bmod L]\hat{x}[(-q_1-q_2 - (p_1+p_2)L)\bmod L].
+\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)\bmod B]e^{-2\pi\I (n_1(b_1+q_1) + n_2(b_2+q_2))} \\ & = \sum_{p_1=0}^{K-1} \sum_{p_2=0}^{K-1} \hat{x}[(q_1 + p_1L)\bmod L] \hat{x}[(q_2 + p_2L)\bmod L]\hat{x}[(-q_1-q_2 - (p_1+p_2)L)\bmod B].
 \end{split}
 \end{equation}
 \begin{cor}
-	If $K\leq 15$ and $\mathcal{P}(B/K)>K$, then the set of signals $\mathcal{S}(x_1,\ldots,x_K)$ are determined uniquely from~\eqref{eq:mean},\eqref{eq:ps} and~\eqref{eq:mix_bispectra}. 
-	If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for $K>15$. 
+	If $K\leq 15$ and $\mathcal{P}(L)L>B$, then the set of signals $\mathcal{S}(x_1,\ldots,x_K)$ are determined uniquely from~\eqref{eq:mean},\eqref{eq:ps} and~\eqref{eq:mix_bispectra}. 
+	If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for any $K$. 
 \end{cor}
 
 \subsection{The continuous model} \label{sec:analysis_continuous}
@@ -295,7 +296,9 @@ and
 \begin{equation} \label{eq:mixed_bispectra_zeros}
 \begin{split}
 B[q_1,q_2] &= \sum_{n_1=0}^{L-1} \sum_{n_2=0}^{L-1}
-M_3[n_1,n_2]e^{-2\pi\I(n_1q_1+n_2q_2)/L} \\ &=   \sum_{p_1=0}^{K-1} \sum_{p_2=0}^{K-1} \hat{x}[(q_1 + p_1L)\bmod L] \hat{x}[(q_2 + p_2L)\bmod L]\hat{x}[-q_1-q_2 - (p_1+p_2)L].
+M_3[n_1,n_2]e^{-2\pi\I(n_1q_1+n_2q_2)/L} \\ &= 
+\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2]e^{-2\pi\I (n_1(b_1+q_1) + n_2(b_2+q_2))} \\ & =
+  \sum_{p_1=-\lfloor\frac{K}{2} \rfloor}^{\lfloor\frac{K}{2}\rfloor} \sum_{p_2=-\lfloor\frac{K}{2}\rfloor}^{\lfloor\frac{K}{2}\rfloor} \hat{x}[q_1 + p_1L] \hat{x}[q_2 + p_2L]\hat{x}[-q_1-q_2 - (p_1+p_2)L].
 \end{split}
 \end{equation}
 
@@ -359,26 +362,14 @@ The EM is then iterate between computing the weights~\eqref{eq:em_weights} and s
 	\caption{Expectation-maximization for the model}
 	\begin{algorithmic}[1]
 		
-		\Procedure{Roy}{$a,b$}       \Comment{This is a test}
-		\State System Initialization
-		\State Read the value 
-		\If{$condition = True$}
-		\State Do this
-		\If{$Condition \geq 1$}
-		\State Do that
-		\ElsIf{$Condition \neq 5$}
-		\State Do another
-		\State Do that as well
-		\Else
-		\State Do otherwise
-		\EndIf
-		\EndIf
-		
+		%\Procedure{Roy}{$a,b$}       \Comment{This is a test}
+		\State Initialization 
+	
 		\While{$something \not= 0$}  \Comment{put some comments here}
 		\State $var1 \leftarrow var2$  \Comment{another comment}
 		\State $var3 \leftarrow var4$
 		\EndWhile  \label{roy's loop}
-		\EndProcedure
+		%\EndProcedure
 		
 	\end{algorithmic}
 \end{algorithm}
