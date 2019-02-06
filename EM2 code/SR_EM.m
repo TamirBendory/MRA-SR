@@ -73,22 +73,6 @@ function x_new = EM_iteration(x_est, fftdata, sqnormdata, sigma, K, S)
 L = length(x_est);
 N = size(fftdata,2);
 
-% wrong code
-% W = zeros(L,N);
-% 
-% for i = 1:K
-%     The idea here is to compute the weights for each sub-signal
-%     separately, and then combine them. The weights of each sub-signal can be
-%     computed efficiently using fft.
-%     xk = x_est(i:K:end);
-%     fftx = fft(xk);
-%     C = ifft(bsxfun(@times, conj(fftx), fftdata));
-%     T = -(sqnormdata + norm(xk)^2 - 2*C)/(2*sigma^2);
-%     T = bsxfun(@minus, T, max(T, [], 1)); % subtracting the max value
-%     W(i:K:L,:) = exp(T);
-% end
-% 
-
 T = zeros(L,N);
 for i = 1:K
     % The idea here is to compute the weights for each sub-signal
@@ -104,22 +88,16 @@ T = bsxfun(@minus, T, max(T, [], 1)); % subtracting the max value
 W = exp(T);
 W = bsxfun(@times, W, 1./sum(W, 1));
 
-% Y = zeros(L,N);
-% Y(1:K:L,:) = ifft(fftdata);
-% b = ifft(sum(conj(fft(W)).*fft(Y), 2))/sigma^2;
 a = zeros(L,1);
 b = zeros(L,1);
 for i = 1:K
 w = W(i:K:L,:);
-b(i:K:end) = ifft(sum(conj(fft(w)).*fftdata, 2))/sigma^2;
+b(i:K:end) = ifft(sum(conj(fft(w)).*fftdata, 2));
 a(i:K:end) = sum(w(:)); 
 end
 
-A = diag(a)/sigma^2 + S;
-
-% Approximating the accurate A (see notes)
-%A = N/sigma^2/K*eye(L) + S;
-
+b = b/sigma^2/N;
+A = diag(a)/sigma^2/N + S;
 x_new = A\b;
 
 end
