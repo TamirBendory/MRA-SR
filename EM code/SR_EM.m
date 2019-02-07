@@ -35,26 +35,24 @@ sqnormdata = repmat(sum(abs(data).^2, 1), size(data,1), 1);
 
 EM_discrepancy = zeros(niter,1);
 for iter = 1 : niter
-
+    
     % EM iteration
     x_new = EM_iteration(x_est, fftdata, sqnormdata, noise_level, K, S);
-    % error between consecutive iterations; not the error with respect to
-    % the signal itself (which is unknown)
+    
     EM_discrepancy(iter) = norm(align_to_reference(x_new,x_est) - x_est)/norm(x_est);
     
-    if mod(iter,100) == 0 
+    if mod(iter,10) == 0
         fprintf('iter = %g, discrepancy = %.4g \n', iter, EM_discrepancy(iter));
         save('XP_data', '-regexp', '^(?!(data|fftdata|sqnormdata)$).') %saving all variables but data
     end
-        
-    % stopping criterion
+    
     if  EM_discrepancy(iter) < tolerance
         x_est = x_new;
         EM_discrepancy = EM_discrepancy(1:iter);
         fprintf('EM last iteration = %g\n', iter);
         break;
     end
-    % update
+    
     x_est = x_new;
     
     if iter == niter
@@ -72,28 +70,24 @@ function x_new = EM_iteration(x_est, fftdata, sqnormdata, sigma, K, S)
 
 L = length(x_est);
 N = size(fftdata,2);
-
 T = zeros(L,N);
 for i = 1:K
-    % The idea here is to compute the weights for each sub-signal
-    % separately, and then combine them. The weights of each sub-signal can be
-    % computed efficiently using fft.
     xk = x_est(i:K:end);
     fftx = fft(xk);
     C = ifft(bsxfun(@times, conj(fftx), fftdata));
     T(i:K:L,:) = -(sqnormdata + norm(xk)^2 - 2*C)/(2*sigma^2);
 end
 
-T = bsxfun(@minus, T, max(T, [], 1)); % subtracting the max value
+T = bsxfun(@minus, T, max(T, [], 1)); 
 W = exp(T);
 W = bsxfun(@times, W, 1./sum(W, 1));
 
 a = zeros(L,1);
 b = zeros(L,1);
 for i = 1:K
-w = W(i:K:L,:);
-b(i:K:end) = ifft(sum(conj(fft(w)).*fftdata, 2));
-a(i:K:end) = sum(w(:)); 
+    w = W(i:K:L,:);
+    b(i:K:end) = ifft(sum(conj(fft(w)).*fftdata, 2));
+    a(i:K:end) = sum(w(:));
 end
 
 b = b/sigma^2/N;
