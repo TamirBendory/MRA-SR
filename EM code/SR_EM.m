@@ -39,11 +39,11 @@ for iter = 1 : niter
     % EM iteration
     x_new = EM_iteration(x_est, fftdata, sqnormdata, noise_level, K, S);
     
-    EM_discrepancy(iter) = norm(align_to_reference(x_new,x_est) - x_est)/norm(x_est);
+     EM_discrepancy(iter) = relative_error(x_est, x_new);
     
     if mod(iter,10) == 0
         fprintf('iter = %g, discrepancy = %.4g \n', iter, EM_discrepancy(iter));
-        save('XP_data', '-regexp', '^(?!(data|fftdata|sqnormdata)$).') %saving all variables but data
+%        save('XP_data', '-regexp', '^(?!(data|fftdata|sqnormdata)$).') %saving all variables but data
     end
     
     if  EM_discrepancy(iter) < tolerance
