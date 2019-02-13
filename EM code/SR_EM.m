@@ -1,6 +1,11 @@
-function [x_est, EM_discrepancy] = SR_EM(data, noise_level, K, x_init, S, niter, tolerance)
+function [x_est, LL, LL_dis] = SR_EM(data, noise_level, K, x_init, S, B, niter, tolerance, verbosity)
 
 % data contains N observations as columns, each of length L/K
+
+% outpout: x_est - the estimated signal
+%          LL - the log likelihood per iteration
+%          LL_dis - log likelihood discrepancy
+%
 % noise_level - std of the Gaussian noise
 % K - down-sampling factor
 % x_init - initial guess
@@ -8,49 +13,51 @@ function [x_est, EM_discrepancy] = SR_EM(data, noise_level, K, x_init, S, niter,
 % niter - max EM iterations
 % tolerance - stopping criterion for EM iterations
 
-if nargin == 5
+if ~exist('niter', 'var') || isempty(niter)
     niter = 1000;
     fprintf('set default niter = 1000\n');
+end
+
+if ~exist('tolerance', 'var') || isempty(tolerance)
     tolerance = 1e-5;
     fprintf('set default tolerance = 1e-5\n');
 end
 
-if nargin == 6
-    if niter>1
-        tolerance = 1e-5;
-        fprintf('set default tolerance = 1e-5\n');
-    else
-        tolerance = niter;
-        niter = 1000;
-        fprintf('set default niter = 1000\n');
-    end
+if ~exist('S', 'var') || isempty(S)
+    S = 0;
 end
 
-% Initialize
 x_est = x_init;
 
 % Precomputations on the observations
 fftdata = fft(data);
 sqnormdata = repmat(sum(abs(data).^2, 1), size(data,1), 1);
 
-EM_discrepancy = zeros(niter,1);
+LL = zeros(niter, 1);
+LL_dis = zeros(niter-1,1);
+
 for iter = 1 : niter
     
     % EM iteration
-    x_new = EM_iteration(x_est, fftdata, sqnormdata, noise_level, K, S);
+    [x_new, LL(iter)] = EM_iteration(x_est, fftdata, sqnormdata, noise_level, K, S);
+    x_new = LP_proj(x_new, B);
     
-     EM_discrepancy(iter) = relative_error(x_est, x_new);
-    
-    if mod(iter,10) == 0
-        fprintf('iter = %g, discrepancy = %.4g \n', iter, EM_discrepancy(iter));
-%        save('XP_data', '-regexp', '^(?!(data|fftdata|sqnormdata)$).') %saving all variables but data
+    if iter>2
+        LL_dis(iter-2) = -(LL(iter) - LL(iter-1))/LL(iter);
     end
     
-    if  EM_discrepancy(iter) < tolerance
-        x_est = x_new;
-        EM_discrepancy = EM_discrepancy(1:iter);
-        fprintf('EM last iteration = %g\n', iter);
-        break;
+    if (mod(iter,10) == 0) && (verbosity == 1) 
+        fprintf('iter = %g, LL discrepancy = %.4g \n', iter, LL_dis(iter-2));
+    end
+    
+    if iter > 2
+        if  LL_dis(iter-2) < tolerance
+            x_est = x_new;
+            LL_dis = LL_dis(1:iter-2);
+            LL = LL(1:iter);
+            fprintf('EM last iteration = %g\n', iter);
+            break;
+        end
     end
     
     x_est = x_new;
@@ -64,10 +71,11 @@ end
 
 
 % Execute one iteration of EM .
-function x_new = EM_iteration(x_est, fftdata, sqnormdata, sigma, K, S)
+function [x_new, LL] = EM_iteration(x_est, fftdata, sqnormdata, sigma, K, S)
 
 % S - the inverse of the prior covariance matrix
-
+% outputs the updated signal and the log likelihood (of the previous
+% iteration)
 L = length(x_est);
 N = size(fftdata,2);
 T = zeros(L,N);
@@ -78,7 +86,8 @@ for i = 1:K
     T(i:K:L,:) = -(sqnormdata + norm(xk)^2 - 2*C)/(2*sigma^2);
 end
 
-T = bsxfun(@minus, T, max(T, [], 1)); 
+LL = sum(log(sum(exp(T),1)));  % log likelihood function
+T = bsxfun(@minus, T, max(T, [], 1));
 W = exp(T);
 W = bsxfun(@times, W, 1./sum(W, 1));
 
