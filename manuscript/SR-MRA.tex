@@ -4,7 +4,6 @@
 \usepackage{amsthm}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage[margin=1in]{geometry}
 \newcommand{\I}{\iota}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\C}{\mathbb{C}}
@@ -14,11 +13,7 @@
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\T}{\mathcal{T}}
 \newcommand{\SR}{super-resolution }
-
-\usepackage{algorithm}
-\usepackage[noend]{algpseudocode}
-
-
+\usepackage[margin=3cm]{geometry}
 \usepackage{color}
 \newcommand{\TODO}[1]{{\color{red}{[#1]}}}
 
@@ -43,29 +38,19 @@
 
 \section{Introduction}
 
-Discuss classical super-resolution, multi-reference alignment, bispectrum, the effect of noise and bias
-cryo-EM is a motivation~\cite{chen2018single}
-
-
-We should discuss mention that our result say that you can sub-sample the third-order autocorrelation by a large factor and still identify the signal. This is somehow related to the sub-Nyquist literature. 
-
-
-\section{Model}
-
-We first describe the  \emph{continuous \SR model}, which is the main subject of this paper.  We assume to collect $N$ independent observations from the model 
+We consider the problem of recovering a signal from $N$ samples from the model 
 \begin{equation} \label{eq:model}
-y = PR_\theta x + \varepsilon,
+y = PR_\theta x + \varepsilon, \qquad \varepsilon\sim \mathcal{N}(0,\sigma^2),
 \end{equation}
-where $x\in S^1$ is a signal on the circle, $R_\theta$ denotes a random, unknown rotation, and $\theta$ is distributed uniformly $\theta\sim \text{Uniform}[0,1)$. 
-The noise term is composed of  i.i.d.\  Gaussian entries  $\varepsilon\sim\mathcal{N}(0,\sigma^2 I)$, where $\sigma^2$ is assumed to be known.
-In this work, we mainly focus on the high noise regime in which $\sigma$ is greater than $\|x\|_2$. 
-Following the rotation, the operator $P$ collects $2L+1$ equally-spaced samples of the signal. Thus, the recorded samples of the $i$th measurement are given by 
+where $x\in S^1$ is a signal on the circle, $R_\theta$ denotes a random, unknown rotation, and $\theta$ is distributed uniformly $\theta\sim \text{Uniform}[0,1)$. The noise term is comprised of i.i.d.\ Gaussian variables with zero mean and variance $\sigma^2$.
+Following the rotation, the operator $P$ collects $L$ equally-spaced samples of the signal. Thus, the recorded samples of the $i$th measurement are given by 
 \begin{equation} \label{eq:continuous_measurements}
 y_i[\ell] = \left(R_{\theta_i} x\right)[\ell] + \varepsilon_i[\ell] =  x[\ell/L+\theta_i] + \varepsilon_i[\ell], \quad \ell=0,\ldots,L-1.
 \end{equation}
 
-Without any assumption on the structure of the signal, one cannot hope to recover it from finite samples. In this work we suppose that 
-the underlying  signal  is bandlimited. Therefore, it can be  be expanded as 
+
+Without any assumption on the structure of the signal, one cannot hope to recover it from finite samples. In this work we assume that 
+the spectrum of the signal is bounded, that us,  it can be  be expanded as 
 \begin{eqnarray} \label{eq:fourier_expansion}
 x(t) = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I bt }, \quad t\in[0,1),
 \end{eqnarray}
@@ -73,11 +58,49 @@ and therefore
 \begin{eqnarray} \label{eq:fourier_expansion}
 y_i[\ell] = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b\left(\frac{\ell}{L}+\theta_i\right) }+ \varepsilon_i[\ell].
 \end{eqnarray}
-Finite bandlimit (frequently called, finite bandwidth) is a standard assumption is many data processing applications, and in particular in structural biology \TODO{REF}. 
+The goal of this work is to derive the fundamental condition for accurate estimate of $x$ from $y$. In particular, 
+we are interested the interplay between two pairs of parameters: (1) the number of measurements verses the signal-to-noise ratio (SNR); (2) the number of frequencies $B$ as a function of the  number of samples and the signal's bandwidth. 
+We denote the latter ratio by  $K=B/L$, where $B=2\tB+1$ and dubbed $K>1$ as the \emph{\SR factor} .  
 
-The classical sampling theory, usually called Shannon-Nyquist sampling theorem, states that sampling rate of the signal should be at least twice its bandwidth~\cite{shannon1949communication} (for a recent comprehensive survey of modern sampling theory; see~\cite{eldar2015sampling}) \TODO{This might be in the introduction}. 
-We are interested the interplay between the number of samples and the signal's bandwidth. 
-We denote this ratio by  $K=B/L$, where $B=2\tB+1$ and $K\in\mathbb{Z}_{>0}$ is called the \emph{\SR factor} .  
+
+
+The classical sampling theory---the Shannon-Nyquist sampling theorem--- states that sampling rate of the signal should be at least twice its bandwidth~\cite{shannon1949communication} (for a recent comprehensive survey of modern sampling theory; see~\cite{eldar2015sampling}).
+That is, the number of samples $L$ should be, at least, $2B$. 
+Estimating a B-bandlimited signal from fewer than $2B$ samples is usually referred to as \emph{super-resolution}. 
+
+The super-resolution problem from multiple measurements attracted a lot of attention in last couple of decades in a variety of fields, such as computer vision, image processing and medical imaging~\cite{park2003super,farsiu2004advances, greenspan2008super}.
+Since the problem is linear conditioned on the rotations, many papers have focused on the problem of estimating the set of $\theta_i$. In this work, we focus on the high noise regime. In this regime, the rotations cannot be estimated by any method and thus the problem is essentially non-linear~\cite{bendory2018toward,aguerrebere2016fundamental}. 
+We mention by passing that many works in recent years showed super-resolution from a single image based on prior knowledge, such as sparsity~\cite{huang2009super,candes2014towards} and recurrence of patches within the same image~\cite{glasner2009super},
+and learning~\cite{lim2017enhanced}; just to mention a few works out of huge collection in the literature. 
+
+The model~\eqref{eq:model} is a special case of the \emph{multi-reference alignment} (MRA) problem. This problem involves estimating a signal from multiple noise measurements; in each measurement the signal is acted upon by an unknown element of a known group. 
+Thus, the measurement model can be written as 
+\begin{equation}
+y = T(g\circ x) +\varepsilon, \qquad g\in G,
+\end{equation}
+where $T$ is a linear operator. 
+In our model, the signal lies in the space of B-bandlimited signals, $G$ is the group of two-dimensional rotations $SO(2)$, and the linear operator is the point-wise sampling.
+Similarly to many of the papers on MRA, our work is inspired from the single particle problem using cryo-electron microscopy (cryo-EM). 
+In particular, this work is a first step towards understanding the resolution limits in this modality. In Section~\ref{sec:future_work} we make this connection explicit.
+
+
+In the low noise regime, one can try to estimate the unknown group elements using one of many synchronization methods~\cite{singer2011angular,bandeira2015non,boumal2016nonconvex,chen2018projected,singer2011three}.
+Once those elements are known, estimating $x$ is linear. We follow focus on the high noise regime in which estimating the unknown rotation is impossible~\cite{bendory2018toward,aguerrebere2016fundamental}.
+Alternatively, it was proposed to estimate the moments of the observation and then to estimate the signal from those moments. This method---known as the method of moments---has been shown to be optimal in the limit of high noise level and many measurements~\cite{bandeira2017optimal,bandeira2017estimation,abbe2018multireference,abbe2018estimation}. If $g$ is distributed uniformly over the group elements, the moments are equivalent to the polynomials that are invariant under the group action. Those invariants are the main pillar for the theoretical results presented in this paper and are presented in the next section.
+
+
+\section{Rotationally invariant feature}
+
+The MRA works with bisepctrum
+
+ bispectrum, the effect of noise and bias
+
+We should discuss mention that our result say that you can sub-sample the third-order autocorrelation by a large factor and still identify the signal. This is somehow related to the sub-Nyquist literature. 
+
+
+
+
+In this work, we mainly focus on the high noise regime 
 
 
 In addition to the continuous case, we consider the \emph{discrete \SR model}. Let us denote by $\T_T\subset S^1$ the equally-spaced grid 
@@ -362,29 +385,15 @@ b :=&   \frac{1}{\sigma^2} \sum_{i,\tau}\omega_{i,\tau}R_\tau^{-1}T^Ty_i.
 \end{align}
 The EM is then iterate between computing the weights~\eqref{eq:em_weights} and solving the linear system~\eqref{eq:em_linear_system}. 
 
-\begin{algorithm}
-	\caption{Expectation-maximization for the model}
-	\begin{algorithmic}[1]
-		
-		%\Procedure{Roy}{$a,b$}       \Comment{This is a test}
-		\State Initialization 
-	
-		\While{$something \not= 0$}  \Comment{put some comments here}
-		\State $var1 \leftarrow var2$  \Comment{another comment}
-		\State $var3 \leftarrow var4$
-		\EndWhile  \label{roy's loop}
-		%\EndProcedure
-		
-	\end{algorithmic}
-\end{algorithm}
-
-
 All expressions in this section were formulated for general linear operator $T$. When the linear operator is the sampling operator, both steps can be implemented efficiently using FFT. In the following section we present numerical results based on the efficient implementation. 
 
 \section{Numerical results}
 
 
 \section{Discussion} \label{sec:future_work}
+
+
+cryo-EM is a motivation~\cite{chen2018single}
 
 
 In this work we studied the possibility for super-resolution using the bispectrum. In general, one can use higher moments. However, computing higher moments amplifies the noise; asymptotically, one need the number of measurements to scale like $\sigma^{2d}$ to compute the $d$th moment. On the other hand, computing higher moments provides more equations. For instance, in the discrete model, we have shown that the key step in the analysis is the reduction of the problem to heterogeneous MRA model~\eqref{eq:heter_mra}.  By taking the $d$th moment we will get  $O(L^{d-1})$ equations, and therefore we expect to be able to recover $O(L^{d-2})$ (up to symmetries). According to this line of reasoning, we conjecture that the maximal frequency would scales like $L^{d-1}$. The price would be the amplification of the noise, that is, one would need to acquire many additional measurements.  
@@ -397,6 +406,7 @@ where $g$ is a uniformly distributed random element of a compact group $G$ actin
 
 In the cryo-EM case, $g\in SO(3)$ and the Fourier transform of $x$ is assumed to be bounded in a ball (``bandlimited'' volume). The linear operator $P$ would be an equally-spaced sampling of the tomographic projection of $g\cdot x$ from a fixed direction. The question then would be whether it is possible to reconstruct the 3-D structure to resolution beyond the resolution dedicated by the sampling operator---beyond the resolution of the 2-D images. Recent evidences suggest it is possible~\cite{chen2018single}. In addition, since the distribution over $SO(3)$ is usually non-uniform, it would be interesting to study the effect of the distribution on the maximal resolution that can be obtained. Another generalization of the model would be to allow other type of noise statistics. This might be important to X-ray free electron laser (XFEL), in which the data is corrupted with Poisson noise.
  
+ \TODO{Relation to 2-D Kam's method?}
 	
 \bibliographystyle{plain}
 \bibliography{ref}
