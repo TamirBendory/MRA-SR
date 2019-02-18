@@ -4,6 +4,7 @@
 \usepackage{amsthm}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{graphicx}
 \newcommand{\I}{\iota}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\C}{\mathbb{C}}
@@ -38,173 +39,254 @@
 
 \section{Introduction}
 
-We consider the problem of recovering a signal from $N$ samples from the model 
-\begin{equation} \label{eq:model}
-y = PR_\theta x + \varepsilon, \qquad \varepsilon\sim \mathcal{N}(0,\sigma^2),
-\end{equation}
-where $x\in S^1$ is a signal on the circle, $R_\theta$ denotes a random, unknown rotation, and $\theta$ is distributed uniformly $\theta\sim \text{Uniform}[0,1)$. The noise term is comprised of i.i.d.\ Gaussian variables with zero mean and variance $\sigma^2$.
-Following the rotation, the operator $P$ collects $L$ equally-spaced samples of the signal. Thus, the recorded samples of the $i$th measurement are given by 
+We consider the problem of recovering a signal from multiple measurements, each is a noisy rotated  version of the signal. Let $x\in S^1$ be a signal on the circle and  let $R_\theta$ denote a random rotation, where $\theta$ is distributed uniformly on the circle $\theta\sim \text{Uniform}[0,1)$. Together with i.i.d.\ Gaussian noise,  the models reads
+\begin{align} \label{eq:model}
+y &= P(R_\theta x + \varepsilon), \quad &\varepsilon\sim \mathcal{N}(0,\sigma^2),
+\end{align}
+where the operator $P$ collects $L$ equally-spaced samples of the rotated signal. Thus, the recorded samples of the $i$th measurement are given by 
 \begin{equation} \label{eq:continuous_measurements}
 y_i[\ell] = \left(R_{\theta_i} x\right)[\ell] + \varepsilon_i[\ell] =  x[\ell/L+\theta_i] + \varepsilon_i[\ell], \quad \ell=0,\ldots,L-1.
 \end{equation}
 
 
-Without any assumption on the structure of the signal, one cannot hope to recover it from finite samples. In this work we assume that 
-the spectrum of the signal is bounded, that us,  it can be  be expanded as 
+Without any assumption on the structure of the signal, one cannot hope to accurately estimate it from finite number of samples. 
+A natural and ubiquitous assumption is that
+the spectrum of the signal is bounded, that us,  it can  be expanded as 
 \begin{eqnarray} \label{eq:fourier_expansion}
 x(t) = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I bt }, \quad t\in[0,1),
 \end{eqnarray}
-and therefore 
+so that
 \begin{eqnarray} \label{eq:fourier_expansion}
 y_i[\ell] = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b\left(\frac{\ell}{L}+\theta_i\right) }+ \varepsilon_i[\ell].
 \end{eqnarray}
-The goal of this work is to derive the fundamental condition for accurate estimate of $x$ from $y$. In particular, 
-we are interested the interplay between two pairs of parameters: (1) the number of measurements verses the signal-to-noise ratio (SNR); (2) the number of frequencies $B$ as a function of the  number of samples and the signal's bandwidth. 
-We denote the latter ratio by  $K=B/L$, where $B=2\tB+1$ and dubbed $K>1$ as the \emph{\SR factor} .  
+The largest non-zero frequency $\tB$ is called the bandlimit, or bandwidth, of the signal.
+The goal of this work is to derive  fundamental conditions for accurate estimate of $x$ from $y$. While the rotations are also unknown, the goal of this task it not estimating them. Such variables are ususally referred to as \emph{nuisance variables}.
 
+The classical sampling theory for a single measurement---the Shannon-Nyquist sampling theorem--- states that the sampling rate of the signal should be at least twice its bandwidth~\cite{shannon1949communication} (for a recent comprehensive survey of modern sampling theory; see~\cite{eldar2015sampling}).
+That is, the number of samples $L$ should be, at least, $2\tB$. 
+In this work, we are interested in  the \emph{high-noise, few samples regime}  in which $\sigma$ is large, and  we recorded  fewer than $2\tB$ samples. In particular, we study the interplay between four parameters: the bandwidth $\tB$, number of samples $L$, noise level $\sigma$, and number of measurements $N$. 
 
+\begin{thm}[informal]
+	Suppose $N\infty$ measurements from the model~\eqref{eq:model} are recorded with $\sigma\to\infty$. If $N$ scales like $\sigma^6$, then one can accurately estimate up to $B\approx L^2/6$ frequencies. 
+\end{thm}
+%Thus, we are interested in the interplay between the number of frequencies $B$ and the number samples and the signal's bandwidth. 
+%We denote the latter ratio by  $K=B/L$, where $B=2\tB+1$ and dubbed $K>1$ as the \emph{\SR factor}.  
 
-The classical sampling theory---the Shannon-Nyquist sampling theorem--- states that sampling rate of the signal should be at least twice its bandwidth~\cite{shannon1949communication} (for a recent comprehensive survey of modern sampling theory; see~\cite{eldar2015sampling}).
-That is, the number of samples $L$ should be, at least, $2B$. 
-Estimating a B-bandlimited signal from fewer than $2B$ samples is usually referred to as \emph{super-resolution}. 
+The problem of estimating a signal from low-resolution measurements (e.g., a few samples) is usually referred to as \emph{super-resolution from multiple measurements}. This problem attracted a lot of attention in the last couple of decades in a variety of fields, such as computer vision, image processing and medical imaging~\cite{park2003super,farsiu2004advances, greenspan2008super}.
+Since given the rotations the problem is linear, many papers have focused on the problem of estimating the set of $\theta_i$. However, in the high noise regime---which is the focal point of this work---the rotations cannot be estimated by any method~\cite{bendory2018toward,aguerrebere2016fundamental}. 
+We mention by passing that many works in recent years studied super-resolution from a single image based on prior knowledge (such as sparsity~\cite{huang2009super,candes2014towards} and recurrence of patches within the same image~\cite{glasner2009super}),
+and learning~\cite{lim2017enhanced}; just to mention a few works out of a huge collection in the literature. 
 
-The super-resolution problem from multiple measurements attracted a lot of attention in last couple of decades in a variety of fields, such as computer vision, image processing and medical imaging~\cite{park2003super,farsiu2004advances, greenspan2008super}.
-Since the problem is linear conditioned on the rotations, many papers have focused on the problem of estimating the set of $\theta_i$. In this work, we focus on the high noise regime. In this regime, the rotations cannot be estimated by any method and thus the problem is essentially non-linear~\cite{bendory2018toward,aguerrebere2016fundamental}. 
-We mention by passing that many works in recent years showed super-resolution from a single image based on prior knowledge, such as sparsity~\cite{huang2009super,candes2014towards} and recurrence of patches within the same image~\cite{glasner2009super},
-and learning~\cite{lim2017enhanced}; just to mention a few works out of huge collection in the literature. 
-
-The model~\eqref{eq:model} is a special case of the \emph{multi-reference alignment} (MRA) problem. This problem involves estimating a signal from multiple noise measurements; in each measurement the signal is acted upon by an unknown element of a known group. 
-Thus, the measurement model can be written as 
+The model~\eqref{eq:model} is a special case of the \emph{multi-reference alignment} (MRA) problem. This problem involves estimating a signal from multiple noisy measurements; in each measurement the signal is acted upon by an unknown element of a known group $G$. 
+Thus, in its most general form, the measurement model can be written as 
 \begin{equation}
 y = T(g\circ x) +\varepsilon, \qquad g\in G,
 \end{equation}
-where $T$ is a linear operator. 
-In our model, the signal lies in the space of B-bandlimited signals, $G$ is the group of two-dimensional rotations $SO(2)$, and the linear operator is the point-wise sampling.
-Similarly to many of the papers on MRA, our work is inspired from the single particle problem using cryo-electron microscopy (cryo-EM). 
+where $T$ is a known linear operator. 
+In our model~\eqref{eq:model}, the signal lies in the space of B-bandlimited signals, $G$ is the group of two-dimensional rotations $SO(2)$, and the linear operator is the point-wise sampling.
+Similarly to many of the papers on MRA, our work is inspired by single particle problems using cryo-electron microscopy (cryo-EM) and x-ray free electron lasers (XFEL)---high-resolution structural methods for biological macromolecules  ~\cite{frank2006three,kuhlbrandt2014resolution,singer2018mathematics}. 
+A
 In particular, this work is a first step towards understanding the resolution limits in this modality. In Section~\ref{sec:future_work} we make this connection explicit.
 
 
-In the low noise regime, one can try to estimate the unknown group elements using one of many synchronization methods~\cite{singer2011angular,bandeira2015non,boumal2016nonconvex,chen2018projected,singer2011three}.
-Once those elements are known, estimating $x$ is linear. We follow focus on the high noise regime in which estimating the unknown rotation is impossible~\cite{bendory2018toward,aguerrebere2016fundamental}.
-Alternatively, it was proposed to estimate the moments of the observation and then to estimate the signal from those moments. This method---known as the method of moments---has been shown to be optimal in the limit of high noise level and many measurements~\cite{bandeira2017optimal,bandeira2017estimation,abbe2018multireference,abbe2018estimation}. If $g$ is distributed uniformly over the group elements, the moments are equivalent to the polynomials that are invariant under the group action. Those invariants are the main pillar for the theoretical results presented in this paper and are presented in the next section.
+In the low noise regime, one can try to estimate the unknown group elements (that is, rotations) using one of many synchronization methods~\cite{singer2011angular,bandeira2015non,boumal2016nonconvex,chen2018projected,singer2011three}.
+Once those elements are known, estimating $x$ is a linear problem. 
+On the high noise regime, which is the focus of this work, estimating the unknown rotations is impossible~\cite{bendory2018toward,aguerrebere2016fundamental}.
+In this work we propose two methods to circumvent this limit. 
+The first approach relies on features of the measurements which are invariant 
+under rotations. In the limit of $N,\sigma\to\infty$, it was shown that this strategy achieves the optimal  estimation rate---that is, no other method can obtain accurate estimation of the signal with fewer measurements~\cite{bandeira2017optimal,bandeira2017estimation,abbe2018multireference,abbe2018estimation}. Based on this approach, different algorithmic methods were proposed under different MRA setups~\cite{bendory2017bispectrum,perry2017sample,abbe2018multireference,boumal2018heterogeneous,chen2018spectral,ma2018heterogeneous,bandeira2014multireference}, as well as for  cryo-EM and XFEL~\cite{kam1980reconstruction,liu2013three,kurta2017correlations,levin20173d,bendory2018toward,pande2018ab,von2018structure}. 
 
+From reasons that are explained later on, we employ the invariant approach only for the theoretical analysis, carried out in Sections~\ref{sec:invariants} and~\ref{sec:analysis}. As a computational framework, we devise an expectation-maximization (EM) algorithm, which marginalizes over the rotations rather than estimating then explicitly.  The EM algorithm is explained in detail in Section~\ref{sec:EM}, followed by numerical experiments.  
 
-\section{Rotationally invariant feature}
+\section{Theory} 
 
-The MRA works with bisepctrum
+\subsection{Rotationally invariant features} \label{sec:invariants}
 
- bispectrum, the effect of noise and bias
-
-We should discuss mention that our result say that you can sub-sample the third-order autocorrelation by a large factor and still identify the signal. This is somehow related to the sub-Nyquist literature. 
-
-
-
-
-In this work, we mainly focus on the high noise regime 
-
-
-In addition to the continuous case, we consider the \emph{discrete \SR model}. Let us denote by $\T_T\subset S^1$ the equally-spaced grid 
-\begin{equation} \label{eq:grid}
-\mathcal{T}_T:=\left\{0,\ldots,\frac{T-1}{T}\right\}.
-\end{equation}
-In the discrete mode we study the case where $\theta$ is rotated on $\T_B$ and then sampled on $\T_{B/K}=\T_{L}$.
-Under this model, the samples of the $i$th measurement can be  written as
+Invariants to rotations are easily to understand in the Fourier domain.
+Let $\hat{z}[k]\in \C^L$ be the $k$th Fourier coefficient of a signal $z$. Rotating the signal by an angle $\alpha$ in the space domain is equivalent to multiply its $k$th Fourier coefficient by $e^{\I k\alpha}$. Hence, a $q$th order rotationally invariant is of the form
 \begin{equation}
-y_i[\ell] = x\left(\frac{\ell K+\theta_i}{B}\right)=x\left(\frac{\ell}{L} + \frac{\theta_i}{B}\right), \quad \ell=0,\ldots L-1,
+\hat{z}[k_1],\ldots \hat{z}[k_{q-1}]{\hat{z}[-k_1-\cdots-k_{q-1}]}.
+\end{equation} 
+In other words, these monomials remain unchanged under rotation. 
+
+In this work, we make use of the first three invariants. The first invariant is the zero frequency $\mu_z = z[0]$ (equivalently in the space domain, the mean). The second invariant is the power spectrum of the signal $P_z[k]=|z[k]|^2$ for $k=0,\ldots,L-1$. The mean and the power spectrum do not determine a signal uniquely. 
+Thus, we make use of the third invariant, the bispectrum, defined by~\cite{tukey1953spectral}
+\begin{equation}
+B_z[k_1,k_2] = z[k_1]z[k_2]z[-k_1-k_2].
 \end{equation}
-for some random $\theta_i\in\{0,\ldots B-1\}$. 
-In this case, $y$ can be expanded by a Fourier series as
-\begin{eqnarray}
-y_\tau[\ell] = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b \left(\frac{\ell}{L} + \frac{\tau}{B}\right) }.
-\end{eqnarray}
+The bispectrum determines almost all signals uniquely. 
+The bispectrum is a key ingredient in many data processing applications, such as separating Gaussian and non-Gaussian processes~\cite{brockett1988bispectral}, studying the cosmic background
+radiation, seismic, radar and EEG signals~\cite{wang2000cosmic,chen2008feature,ning1989bispectral}, MIMO systems~\cite{chen2001frequency}, and classification~\cite{zhao2014rotationally}.  
+In Section~\ref{sec:future_work} we discuss the ramifications of employing higher-order invariants.  
 
-The discrete model can be formulated conveniently in a matrix-vector notation as  
-\begin{equation} \label{eq:discrete_model}
-y^d = P_BR_{\theta_B} x^d + \varepsilon,
-\end{equation}
-where $x^d\in\mathbb{R}^{B}$ is the restriction of $x$ to $\T_B$, $R_{\theta_B}$ is a circular shift (uniformly distributed) over  $\T_B$ and the sampling operator $P_B\in\mathbb{R}^{B\times B}$ is a diagonal matrix, whose diagonal is composed of 1's every other $K$ entry, and zero otherwise
 
-The main goal of this work is to analyze the conditions enabling accurate estimate of $x$ in the continuous and discrete models in high noise regimes. As we show, accurate recovery depends on to ratios: the number of measurements as a function of the noise level, and the number of required samples as a function of the signal's bandwidth. Since our analysis is based on the method of moments, the required number of measurements scales asymptotically as $\sigma^{2d}$, where $d$ is the higher-order moment used~\cite{abbe2018estimation,bandeira2017estimation}. 
-In this degree we use the lowest-order moment possible for \SR---the bispectrum. Lower order moments do not suffice to determine a signal uniquely, a fortiori for \SR. Using the bispectrum requires the number of measurements $N$ to scale, at least, as $\sigma^6$. 
-As discussed in Section~\ref{sec:future_work}, if more measurements are available, one use higher moments to resolve even higher frequencies. 
-\TODO{I am using moments/invariants interchangeably}
+%The invariants can be easily estimated from the data
+%We should discuss mention that our result say that you can sub-sample the third-order autocorrelation by a large factor and still identify the signal. This is somehow related to the sub-Nyquist literature. 
+%
+%
+%
+%
+%In this work, we mainly focus on the high noise regime 
+%
+%
+%In addition to the continuous case, we consider the \emph{discrete \SR model}. Let us denote by $\T_T\subset S^1$ the equally-spaced grid 
+%\begin{equation} \label{eq:grid}
+%\mathcal{T}_T:=\left\{0,\ldots,\frac{T-1}{T}\right\}.
+%\end{equation}
+%In the discrete mode we study the case where $\theta$ is rotated on $\T_B$ and then sampled on $\T_{B/K}=\T_{L}$.
+%Under this model, the samples of the $i$th measurement can be  written as
+%\begin{equation}
+%y_i[\ell] = x\left(\frac{\ell K+\theta_i}{B}\right)=x\left(\frac{\ell}{L} + \frac{\theta_i}{B}\right), \quad \ell=0,\ldots L-1,
+%\end{equation}
+%for some random $\theta_i\in\{0,\ldots B-1\}$. 
+%In this case, $y$ can be expanded by a Fourier series as
+%\begin{eqnarray}
+%y_\tau[\ell] = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b \left(\frac{\ell}{L} + \frac{\tau}{B}\right) }.
+%\end{eqnarray}
+%
+%The discrete model can be formulated conveniently in a matrix-vector notation as  
+%\begin{equation} \label{eq:discrete_model}
+%y^d = P_BR_{\theta_B} x^d + \varepsilon,
+%\end{equation}
+%where $x^d\in\mathbb{R}^{B}$ is the restriction of $x$ to $\T_B$, $R_{\theta_B}$ is a circular shift (uniformly distributed) over  $\T_B$ and the sampling operator $P_B\in\mathbb{R}^{B\times B}$ is a diagonal matrix, whose diagonal is composed of 1's every other $K$ entry, and zero otherwise
+%
+%The main goal of this work is to analyze the conditions enabling accurate estimate of $x$ in the continuous and discrete models in high noise regimes. As we show, accurate recovery depends on to ratios: the number of measurements as a function of the noise level, and the number of required samples as a function of the signal's bandwidth. Since our analysis is based on the method of moments, the required number of measurements scales asymptotically as $\sigma^{2d}$, where $d$ is the higher-order moment used~\cite{abbe2018estimation,bandeira2017estimation}. 
+%In this degree we use the lowest-order moment possible for \SR---the bispectrum. Lower order moments do not suffice to determine a signal uniquely, a fortiori for \SR. Using the bispectrum requires the number of measurements $N$ to scale, at least, as $\sigma^6$. 
+%As discussed in Section~\ref{sec:future_work}, if more measurements are available, one use higher moments to resolve even higher frequencies. 
+%\TODO{I am using moments/invariants interchangeably}
+%%
+%\section{Analysis} \label{sec:analysis}
 
-\section{Analysis}
-
-We start by rigorous analysis of the discrete model in Section~\ref{sec:discrete_analysis} and deriving Theorem~\ref{thm:discrete}. Then, several intermediate calculations in Section~\ref{sec:expressions}  lead to the analysis of the continuous case and Conjecture~\ref{conj:continuous}.
+%We start by rigorous analysis of the discrete model in Section~\ref{sec:discrete_analysis} and deriving Theorem~\ref{thm:discrete}. Then, several intermediate calculations in Section~\ref{sec:expressions}  lead to the analysis of the continuous case and Conjecture~\ref{conj:continuous}.
 
 \subsection{The discrete model} \label{sec:discrete_analysis}
 
-We begin by analyzing the discrete setting~\eqref{eq:discrete_model}. 
-For $i = 0,\ldots,K-1$, let us define 
+In this section, we describe a discrete model, and then show how... 
+
+Let us denote by $\T_T\subset S^1$ the equally-spaced grid 
+ \begin{equation} \label{eq:grid}
+ \mathcal{T}_T:=\left\{0,\ldots,\frac{T-1}{T}\right\}.
+ \end{equation}
+ In the discrete mode we study the case where $\theta$ is rotated on $\T_B$ and then sampled on $\T_{B/K}=\T_{L}$.
+ Under this model, the samples of the $i$th measurement can be  written as
+ \begin{equation} \label{eq:discrete_model}
+ y_i^d[\ell] = x\left(\frac{\ell K+\theta_i}{B}\right) + \varepsilon_i[\ell]=x\left(\frac{\ell}{L} + \frac{\theta_i}{B}\right)+\varepsilon_i[\ell], \quad \ell=0,\ldots L-1,
+ \end{equation}
+ for some random $\theta_i\in\{0,\ldots B-1\}$. The super script $y^d$ indicates that the measurements are taken from the discrete model. 
+% In this case, $y$ can be expanded by a Fourier series as
+% \begin{eqnarray}
+% y_\tau[\ell] = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b \left(\frac{\ell}{L} + \frac{\tau}{B}\right) }.
+% \end{eqnarray}
+ 
+ %The discrete model can be formulated conveniently in a matrix-vector notation as  
+ %\begin{equation} \label{eq:discrete_model}
+ %y^d = P_BR_{\theta_B} x^d + \varepsilon,
+ %\end{equation}
+ %where $x^d\in\mathbb{R}^{B}$ is the restriction of $x$ to $\T_B$, $R_{\theta_B}$ is a circular shift (uniformly distributed) over  $\T_B$ and the sampling operator $P_B\in\mathbb{R}^{B\times B}$ is a diagonal matrix, whose diagonal is composed of 1's every other $K$ entry, and zero otherwise
+
+To analyze this model, we introduce notation
 \begin{equation} \label{eq:sub_signals}
 x_i[\ell] = x[K\ell + i], \quad \ell=0,\ldots,L-1.
 \end{equation}
 Using~\eqref{eq:sub_signals}, one can think about each measurement in the discrete model 
-as a two stages procedure. First, one of the $K$ signals~\eqref{eq:sub_signals} is chosen uniformly at random. Then, a random cyclic shift on the grid $\T_L$ is acted upon the chosen signal.
+as a two stages procedure. First, one of the $K$ signals~\eqref{eq:sub_signals} is chosen uniformly at random. Then, a random cyclic shift on the grid $\T_L$ is acted upon the chosen signal (of length $L$).
 Therefore, the model can be reformulate  as 
 \begin{equation} \label{eq:heter_mra}
 y^d =  R_{\theta_{L}} x_{v} + \varepsilon,
 \end{equation}
 where $v$ distributed uniformly over $\{0,\ldots,K-1\}$ and $R_{\theta_L}$ is a circular shift on the grid $\T_L$. 
 
-The model~\eqref{eq:heter_mra} has been studied in the literature under the name \emph{heterogeneous multi-reference alignment}and analyzed using the method of moments~\cite{perry2017sample,bandeira2017estimation,boumal2018heterogeneous}. Under the assumption of uniform distribution of cyclic shifts, the moments are completely equivalent to polynomials that are invariant under cyclic shifts. In particular, we make use of the first three invariants.  These invariants, called the mean, the power spectrum and the bispectrum, can be described readily in the Fourier transform. In particular, for a signal $z\in\R^p$, we define
-\begin{align}
-&\mu_z = \hat{z}[0], \nonumber \\
-&P_z[q] = \vert \hat{z}[q]\vert^2, \quad q=0,\ldots,p-1\\
-&B_z[q_1,q_2] = \hat{z}[q_1]\hat{z}[q_2]\hat{z}[-q_1-q_2], \quad q_1,q_2=0,\ldots,p-1. \nonumber
-\end{align}  
-It is well known that the bispectrum determines a generic signal uniquely in a stable manner~\cite{bendory2017bispectrum}. \TODO{Ref}
-
-In the heterogeneous model, it can be shown that in the limit of $N\to\infty$ the invariants of the observations converge to \TODO{should be written more accurately} 
+The model~\eqref{eq:heter_mra} has been studied in the literature under the name \emph{heterogeneous multi-reference alignment}and analyzed using the bispectrum~\cite{perry2017sample,bandeira2017estimation,boumal2018heterogeneous}. %Under the assumption of uniform distribution of cyclic shifts, the moments are completely equivalent to polynomials that are invariant under cyclic shifts. In particular, we make use of the first three invariants.  These invariants, called the mean, the power spectrum and the bispectrum, can be described readily in the Fourier transform. In particular, for a signal $z\in\R^p$, we define
+%\begin{align}
+%&\mu_z = \hat{z}[0], \nonumber \\
+%&P_z[q] = \vert \hat{z}[q]\vert^2, \quad q=0,\ldots,p-1\\
+%&B_z[q_1,q_2] = \hat{z}[q_1]\hat{z}[q_2]\hat{z}[-q_1-q_2], \quad q_1,q_2=0,\ldots,p-1. \nonumber
+%\end{align}  
+%It is well known that the bispectrum determines a generic signal uniquely in a stable manner~\cite{bendory2017bispectrum}. \TODO{Ref}
+In particular, it was shown that in the limit of $N\to\infty$ the linear combination of the invariants can be easily estimated from the data by 
 \begin{align} \label{eq:mix_invariants}
-\mu_{y^d} &= \frac{1}{K}\sum_{i=1}^K \mu_{x_i}, \nonumber\\
-P_{y^d} &= \frac{1}{K}\sum_{i=1}^K P_{x_i} + \sigma^2L\mathbf{1}, \\
-B_{y^d} &= \frac{1}{K}\sum_{i=1}^K (B_{x_i} +\mu_{x_i}\sigma^2L^2 A ), \nonumber
+\frac{1}{N}\sum_{i=1}^N \mu_{y_i^d} &= \frac{1}{K}\sum_{i=1}^K \mu_{x_i}, \nonumber\\
+\frac{1}{N}\sum_{i=1}^N  P_{y^d}[k] &= \frac{1}{K}\sum_{i=1}^K P_{x_i}[k] + \sigma^2L\mathbf{1}, \quad k=0,\ldots,L-1\\
+\frac{1}{N}\sum_{i=1}^N B_{y^d}[k_1,k_2] &= \frac{1}{K}\sum_{i=1}^K (B_{x_i} [k_1,k_2]+\mu_{x_i}\sigma^2L^2 A[k_1,k_2] ), \quad  k_1,k_2=0,\ldots,L-1 \nonumber
 \end{align}
 where $\mathbf{1}\in\mathbb{R}^L$ is a vector of ones, and $A\in\mathbb{R}^{L\times L}$ is a zero matrix except $A[0,0]=3$ and $A[i,0]=A[0,i]=A[i,i]=1$ for $i=1,\ldots,L-1$.
 Given $\sigma^2$, one can remove the bias factors easily. 
-We first discuss how to recover the signal $x_1,\ldots,x_k$ from~\eqref{eq:mix_invariants} up to a group of symmetries, and later discuss how to  choose the signal out of this set. 
+%We first discuss how to recover the signal $x_1,\ldots,x_k$ from~\eqref{eq:mix_invariants} up to a group of symmetries, and later discuss how to  choose the signal out of this set. 
 
-The identifiability of a set of $K$ signals from the mix of their  invariants~\eqref{eq:mix_invariants} was studied~\cite{bandeira2017estimation}. In this work, it was shown that $K$ generic signals can be recovered from~\eqref{eq:mix_invariants}, up to permutation (between signals) and cyclic shifts (of each signal separately), as long as $K<\mathcal{P}(L)$ where
+The identifiability of a set of $K$ signals from the mix of their  invariants~\eqref{eq:mix_invariants} was studied~\cite{bandeira2017estimation}.
+Clearly, one can hope to identify the signals only up  to permutation (between the $K$ signals) and cyclic shifts (of each signal separately). 
+Hence, at best, one can identify the set of signals  
+\begin{equation}
+\mathcal{S}(x_1,\ldots,x_K):=\left\{ \theta_0,\ldots,\theta_{K-1},\pi : R_{\theta_0}x_{\pi(0)}, \ldots,R_{\theta_{K-1}}x_{\pi(K-1)},
+\right\}
+\end{equation}
+for cyclic shifts $R_{\theta_i}$ for $\theta_i=0,\ldots,L-1$, and a permutation $\pi$.
+In this work, it was shown that $K$ generic signals can be recovered from~\eqref{eq:mix_invariants},  as long as $K<\mathcal{P}(L)$, where
 \begin{equation} \label{eq:Pl}
 \mathcal{P}(L) := \frac{L+3+\left\lfloor L/2\right\rfloor +  \left\lceil (L-1)(L-2)/6\right\rceil}{L+1}.
 \end{equation}
 For $K\geq 5$, it suffices to require $K\leq \frac{L+5}{6}$. 
 Since $\mathcal{P}(L) \approx L/6$, we conclude that the minimal number of samples scales as $\sqrt{6B}$. In other words, from $L$ samples, one can approximate  $B=O(L^2)$ frequencies. 
-This bound was proved only in the regime $K\leq 15$, and therefore limiting our rigorous proof for the regime of small $L$. 
-However, it was conjectured  to hold true for any $K$~\cite[Conjecture 5.4]{bandeira2017estimation}. \TODO{To stress the difference between identify the signals, and recover them.}
-
-We introduce the set of signals \TODO{to explain where this set comes from}
-\begin{equation}
-\mathcal{S}(x_1,\ldots,x_K):=\left\{ \theta_0,\ldots,\theta_{K-1},\pi : R_{\theta_0}x_{\pi(0)}, \ldots,R_{\theta_{K-1}}x_{\pi(K-1)},
- \right\}
-\end{equation}
-for cyclic shifts $R_{\theta_i}$ for $\theta_i=0,\ldots,L-1$, and a permutation $\pi$. Using this notation, we conclude the following result:
+This bound was proved only in the regime $L\leq 180$\footnote{The proof of the result is based on numerical examination of a special matrix that should be carry out for each set of parameters. In~\cite{bandeira2017estimation} the conjecture was verified for a limited regime of parameters. Thanks to the assistance of Dr. Joseph Kileel we were able to verify the conjecture for broader set of parameters.}, and therefore limiting our rigorous proof for the regime of small $L$. 
+However, it was conjectured  to hold true for any $L$~\cite[Conjecture 5.4]{bandeira2017estimation}.
+Therefore, we conclude the following result:
 \begin{prop} \label{prop1}
 Consider the  discrete periodic model~\eqref{eq:discrete_model} when $N\to\infty$. 
-For $K\leq 15$ and  $\mathcal{P}(L)L>B$, one can identify the set of signals $\mathcal{S}(x_1,\ldots,x_K)$.
-If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for any $K$.
+For $L\leq 180$ and  $B/L<\mathcal{P}(L)$, one can identify the set of signals $\mathcal{S}(x_1,\ldots,x_K)$.
+If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for any $L$.
 \end{prop}	
 
 It is important to note that Proposition~\eqref{prop1} is theoretical in the sense that it is not clear whether the bound~\eqref{eq:Pl} can be achieved computationally.  
 This question was studied empirically in~\cite{boumal2018heterogeneous}. Numerical evidences suggest that the maximal number of signals that can recovered, up cyclic shifts and permutation, from~\eqref{eq:mix_bispectra} is $\sqrt{L}$. 
 Strong theoretical support was provided in~\cite{weinthesis}. In particular,  it was proven that $K$ signals whose entries i.i.d.\ Gaussians can be recovered with high probability from their mixed bispectrum as long as $k\leq \sqrt{L}/\text{polylog}(L)$.
 In this case, the highest frequency that can be estimated scales as $B\leq L^{3/2}$ (up to possible log factors). 
-
+\TODO{This is true for signals with white spectrum... for our case the bound seems smaller since the signals are smooth}
 
 
 Proposition~\ref{prop1} suggests that all entries of the underlying signal can be identified in the regime of~$\mathcal{P}(L)L>B$. However, given all possible cyclic shifts and permutations, there are $(L^K)\cdot K!$ \TODO{check this number}  different ways to order the signals $x_1,\ldots,x_K$. Hence, to guarantee unique recovery of the signal, up to cyclic shift, one must impose some prior on the signal, such as smoothness. In the following proposition we show that such unique ordering is possible under rather mild conditions.
 The proposition is proved  in Appendix~\ref{sec:proof_bandlimit}.
 \begin{prop} \label{prop:bandlimit}
 Suppose that $x$ is generic, and let 
-\begin{equation} \label{eq:sub_signals}
+\begin{equation} %\label{eq:sub_signals}
 x_i[\ell] = x[K\ell + i], \quad \ell=0,\ldots,L-1.
 \end{equation}
 In addition, suppose that $\hx[m]=x_m$ for some $m$ and $x_m$.
 If $x_m\neq 0$, then there exists only one signal in $\mathcal{S}$ obeying $\hx[m]=x_m$. If $x_m=0$, then also the all the cyclic shifts of the signal satisfies the constraint (but only them). 
 \end{prop}	
+\begin{proof}
+Suppose that $x_1,\ldots,x_K\in\R^L$ are known.
+The combined signal is then given by 
+\begin{equation}
+x = \sum_{i=1}^K T_kZR_kx_k,
+\end{equation}
+where $R_k$ are (unknown) cyclic shifts of the signals $x_k$, $Z$ denotes a zero-padding operator (by a factor of $K$) so that $Zx_k\in\mathbb{R}^B$, and $T_k$ shifts the zero-padded signals by $k$ entries for $k=0,\ldots, K-1$. 
+For instance, for $K=3$ we have: 
+\begin{equation}
+Zx = (x[0],0,0,x[1],0,0,x[2],...)\in\mathbb{R}^B.
+\end{equation}
 
+The Fourier transform of a signal $u\in\mathbb{R}^{L}$ is defined by 
+\begin{equation}
+\hat{u}[m]=\sum_{\ell=0}^{L-1}u[\ell]e^{-2\pi\I m\ell /L}, \quad m=0,\ldots,L-1. 
+\end{equation}
+The Fourier transform of $Zu$ is then given by 
+\begin{equation}
+\widehat{(Zu)}[m] = \sum_{\ell=0}^{L-1}u[\ell]e^{-2\pi\I m\ell /(B/K)}, \quad m=0,\ldots,B-1.
+\end{equation}
+In other words, $\widehat{(Zu)}[m] = \hat{u}[m\bmod L]$.
+
+
+The Fourier transform of $ZR_{r_k}u$ is  given by 
+\begin{equation}
+\widehat{(ZR_{r_k}u)}[m] = e^{-2\pi\I m r_k L} \hat{u}[m\bmod L], \quad m=0,\ldots,B-1.
+\end{equation}
+This signal is shifted once again and we get
+\begin{eqnarray} \label{eq:Fourier_structure}
+\hat{x}[m] = \sum_{k=1}^K e^{-2\pi\I m( p_k+r_k K)/B} \hat{x}_k[m \bmod L]. 
+\end{eqnarray}
+for $m=0,\ldots,B-1$, 
+where $r_k$ is a chosen randomly uniformly over $\{0,\ldots,L-1\}$, independently for each $k$, and $p_k$ represents the permutations, that is, $p_k\in\{0,\ldots K-1\}$, $p_k\neq p_\ell$ for all $k\neq \ell$ (note that we do have the freedom to fix one signal and its shift). 
+\end{proof}
 Our main interest is in bandlimited signals for which the spectrum vanishes starting from some frequency. Proposition~\ref{prop:bandlimit} implies that generically there exists at most one bandlimited signal in  $\mathcal{S}(x_1,\ldots,x_K)$.  
 Hence, we conclude the following:
 \begin{thm} \label{thm:discrete}
@@ -213,7 +295,7 @@ Then, For $K\leq 15$ and for $\mathcal{P}(L)L>B$ (given in~\eqref{eq:Pl}), one c
 If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for any $K$.
 \end{thm}
 
-\subsection{Explicit expressions of the invariants} \label{sec:expressions}
+\subsection{From the discrete to the continuous model} \label{sec:expressions}
 
 We are now turning our attention to explicit computation of the moments as a function of the Fourier coefficients of $x$ (the high-resolution signal). This computation will serve to move from the discrete setting to the continuous one. 
 
@@ -344,7 +426,8 @@ Based on that intuition, we conjecture that the same super-resolution factor rem
 Consider the  continuous periodic model~\eqref{eq:continuous_measurements} when $N\to\infty$, and that $x$ is a B-bandlimited signal, the  one can identify $x$ up to shift as long as $K\leq C \sqrt{B}$, for some constant $C$.
 \end{conj}
 
-\section{An expectation-maximization algorithm for super-resolution}
+\section{An expectation-maximization algorithm }
+\label{sec:EM}
 
 Our theoretical study is based on the invariant features. Conceptually, it suggests a two stages procedure: it starts with estimation of the set $\mathcal{S}(x_1,\ldots,x_K)$, and then identify one unique signal according to some prior (e.g., smoothness, bandlimit).
 While efficient bispectrum demixing is possible in some regime~\cite{boumal2018heterogeneous,weinthesis}, this approach suffers from two drawbacks. First, it is not clear how to find a unique signal from $\mathcal{S}(x_1,\ldots,x_K)$ that agrees with the prior.  Second, any error in finding the appropriate set of rotations and permutation may result in a  completely different signal. Hence, such a procedure may be very sensitive to errors. 
@@ -390,6 +473,15 @@ All expressions in this section were formulated for general linear operator $T$.
 \section{Numerical results}
 
 
+
+\begin{figure}[h]
+	\centering
+	  \includegraphics[scale=1]{XP1}
+	  \caption{\label{fig:XP1} caption}	
+\end{figure}
+
+
+
 \section{Discussion} \label{sec:future_work}
 
 
@@ -414,48 +506,48 @@ In the cryo-EM case, $g\in SO(3)$ and the Fourier transform of $x$ is assumed to
 
 \appendix
 
-\section{Proof of Proposition~\ref{prop:bandlimit}} \label{sec:proof_bandlimit}
-Suppose that $x_1,\ldots,x_K\in\R^L$ are known.
-The combined signal is then given by 
-\begin{equation}
-x = \sum_{i=1}^K T_kZR_kx_k,
-\end{equation}
-where $R_k$ are (unknown) cyclic shifts of the signals $x_k$, $Z$ denotes a zero-padding operator (by a factor of $K$) so that $Zx_k\in\mathbb{R}^B$, and $T_k$ shifts the zero-padded signals by $k$ entries for $k=0,\ldots, K-1$. 
-For instance, for $K=3$ we have: 
-\begin{equation}
-Zx = (x[0],0,0,x[1],0,0,x[2],...)\in\mathbb{R}^B.
-\end{equation}
-
-The Fourier transform of a signal $u\in\mathbb{R}^{L}$ is defined by 
-\begin{equation}
-\hat{u}[m]=\sum_{\ell=0}^{L-1}u[\ell]e^{-2\pi\I m\ell /L}, \quad m=0,\ldots,L-1. 
-\end{equation}
-The Fourier transform of $Zu$ is then given by 
-\begin{equation}
-\widehat{(Zu)}[m] = \sum_{\ell=0}^{L-1}u[\ell]e^{-2\pi\I m\ell /(B/K)}, \quad m=0,\ldots,B-1.
-\end{equation}
-In other words, $\widehat{(Zu)}[m] = \hat{u}[m\bmod L]$.
-
-
-The Fourier transform of $ZR_{r_k}u$ is  given by 
-\begin{equation}
-\widehat{(ZR_{r_k}u)}[m] = e^{-2\pi\I m r_k L} \hat{u}[m\bmod L], \quad m=0,\ldots,B-1.
-\end{equation}
-This signal is shifted once again and we get
-\begin{eqnarray} \label{eq:Fourier_structure}
-\hat{x}[m] = \sum_{k=1}^K e^{-2\pi\I m( p_k+r_k K)/B} \hat{x}_k[m \bmod L]. 
-\end{eqnarray}
-for $m=0,\ldots,B-1$, 
-where $r_k$ is a chosen randomly uniformly over $\{0,\ldots,L-1\}$, independently for each $k$, and $p_k$ represents the permutations, that is, $p_k\in\{0,\ldots K-1\}$, $p_k\neq p_\ell$ for all $k\neq \ell$ (note that we do have the freedom to fix one signal and its shift). 
-
-Let us denote the set of rotations and permutation that satisfy the assumption  $\hx[m]=x_m\neq 0$ by $\tilde{p}_k,\tilde{r}_k$. Let $E_k:=e^{-2\pi\I m( p_k+r_k K)/B}$, $\tilde{E}_k:=e^{-2\pi\I m( \tilde{p}_k+\tilde{r}_k K)/B}$ and $\hx_k:=\hat{x}_k[m \bmod L]$ for fixed $m$. Now, let us assume that there exists another $E_k$ that satisfies the constraint. In this case,
-\begin{equation} \label{eq:inner_product}
-x_m=\left\langle E_k,\hx_k\right\rangle = \left\langle \tilde{E}_k,\hx_k\right\rangle \quad \Rightarrow \quad\left\langle \tilde{E}_k -{E}_k,\hx_k\right\rangle =0.
-\end{equation} 
-For generic $x$, the orthogonal complement of $\hx_k$ is Lebesgue measure zero and therefore~\eqref{eq:inner_product} is not satisfied generically.  
-
-For $x_m=0$, one can always multiply both sides of~\eqref{eq:Fourier_structure} by $e^{2\pi\I m q }$ for some integer $q$. This will keep the structure of $E_K$ and therefore there is no way to avoid this symmetry. 
-
+%\section{Proof of Proposition~\ref{prop:bandlimit}} \label{sec:proof_bandlimit}
+%Suppose that $x_1,\ldots,x_K\in\R^L$ are known.
+%The combined signal is then given by 
+%\begin{equation}
+%x = \sum_{i=1}^K T_kZR_kx_k,
+%\end{equation}
+%where $R_k$ are (unknown) cyclic shifts of the signals $x_k$, $Z$ denotes a zero-padding operator (by a factor of $K$) so that $Zx_k\in\mathbb{R}^B$, and $T_k$ shifts the zero-padded signals by $k$ entries for $k=0,\ldots, K-1$. 
+%For instance, for $K=3$ we have: 
+%\begin{equation}
+%Zx = (x[0],0,0,x[1],0,0,x[2],...)\in\mathbb{R}^B.
+%\end{equation}
+%
+%The Fourier transform of a signal $u\in\mathbb{R}^{L}$ is defined by 
+%\begin{equation}
+%\hat{u}[m]=\sum_{\ell=0}^{L-1}u[\ell]e^{-2\pi\I m\ell /L}, \quad m=0,\ldots,L-1. 
+%\end{equation}
+%The Fourier transform of $Zu$ is then given by 
+%\begin{equation}
+%\widehat{(Zu)}[m] = \sum_{\ell=0}^{L-1}u[\ell]e^{-2\pi\I m\ell /(B/K)}, \quad m=0,\ldots,B-1.
+%\end{equation}
+%In other words, $\widehat{(Zu)}[m] = \hat{u}[m\bmod L]$.
+%
+%
+%The Fourier transform of $ZR_{r_k}u$ is  given by 
+%\begin{equation}
+%\widehat{(ZR_{r_k}u)}[m] = e^{-2\pi\I m r_k L} \hat{u}[m\bmod L], \quad m=0,\ldots,B-1.
+%\end{equation}
+%This signal is shifted once again and we get
+%\begin{eqnarray} \label{eq:Fourier_structure}
+%\hat{x}[m] = \sum_{k=1}^K e^{-2\pi\I m( p_k+r_k K)/B} \hat{x}_k[m \bmod L]. 
+%\end{eqnarray}
+%for $m=0,\ldots,B-1$, 
+%where $r_k$ is a chosen randomly uniformly over $\{0,\ldots,L-1\}$, independently for each $k$, and $p_k$ represents the permutations, that is, $p_k\in\{0,\ldots K-1\}$, $p_k\neq p_\ell$ for all $k\neq \ell$ (note that we do have the freedom to fix one signal and its shift). 
+%
+%%Let us denote the set of rotations and permutation that satisfy the assumption  $\hx[m]=x_m\neq 0$ by $\tilde{p}_k,\tilde{r}_k$. Let $E_k:=e^{-2\pi\I m( p_k+r_k K)/B}$, $\tilde{E}_k:=e^{-2\pi\I m( \tilde{p}_k+\tilde{r}_k K)/B}$ and $\hx_k:=\hat{x}_k[m \bmod L]$ for fixed $m$. Now, let us assume that there exists another $E_k$ that satisfies the constraint. In this case,
+%%\begin{equation} \label{eq:inner_product}
+%%x_m=\left\langle E_k,\hx_k\right\rangle = \left\langle \tilde{E}_k,\hx_k\right\rangle \quad \Rightarrow \quad\left\langle \tilde{E}_k -{E}_k,\hx_k\right\rangle =0.
+%%\end{equation} 
+%%For generic $x$, the orthogonal complement of $\hx_k$ is Lebesgue measure zero and therefore~\eqref{eq:inner_product} is not satisfied generically.  
+%%
+%%For $x_m=0$, one can always multiply both sides of~\eqref{eq:Fourier_structure} by $e^{2\pi\I m q }$ for some integer $q$. This will keep the structure of $E_K$ and therefore there is no way to avoid this symmetry. 
+%
 \section{Derivation of the bispectrum in the continuous model} \label{sec:continuous_bispectrum}
 
 In this appendix, we compute the bispectrum explicitly for the continuous setting. The third-order autocorrelation is given by (by averaging over all shifts $\ell\in\mathcal{L}$, and all rotations on the circle)
