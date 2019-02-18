@@ -26,7 +26,7 @@
 \newtheorem{conj}[thm]{Conjecture}
 \newtheorem{cor}[thm]{Corollary}
 \newtheorem{prop}[thm]{Proposition}
-
+\newtheorem{lemma}[thm]{Lemma}
 
 \begin{document}
 
@@ -48,7 +48,6 @@ where the operator $P$ collects $L$ equally-spaced samples of the rotated signal
 y_i[\ell] = \left(R_{\theta_i} x\right)[\ell] + \varepsilon_i[\ell] =  x[\ell/L+\theta_i] + \varepsilon_i[\ell], \quad \ell=0,\ldots,L-1.
 \end{equation}
 
-
 Without any assumption on the structure of the signal, one cannot hope to accurately estimate it from finite number of samples. 
 A natural and ubiquitous assumption is that
 the spectrum of the signal is bounded, that us,  it can  be expanded as 
@@ -69,8 +68,6 @@ In this work, we are interested in  the \emph{high-noise, few samples regime}  i
 \begin{thm}[informal]
 	Suppose $N\infty$ measurements from the model~\eqref{eq:model} are recorded with $\sigma\to\infty$. If $N$ scales like $\sigma^6$, then one can accurately estimate up to $B\approx L^2/6$ frequencies. 
 \end{thm}
-%Thus, we are interested in the interplay between the number of frequencies $B$ and the number samples and the signal's bandwidth. 
-%We denote the latter ratio by  $K=B/L$, where $B=2\tB+1$ and dubbed $K>1$ as the \emph{\SR factor}.  
 
 The problem of estimating a signal from low-resolution measurements (e.g., a few samples) is usually referred to as \emph{super-resolution from multiple measurements}. This problem attracted a lot of attention in the last couple of decades in a variety of fields, such as computer vision, image processing and medical imaging~\cite{park2003super,farsiu2004advances, greenspan2008super}.
 Since given the rotations the problem is linear, many papers have focused on the problem of estimating the set of $\theta_i$. However, in the high noise regime---which is the focal point of this work---the rotations cannot be estimated by any method~\cite{bendory2018toward,aguerrebere2016fundamental}. 
@@ -85,9 +82,7 @@ y = T(g\circ x) +\varepsilon, \qquad g\in G,
 where $T$ is a known linear operator. 
 In our model~\eqref{eq:model}, the signal lies in the space of B-bandlimited signals, $G$ is the group of two-dimensional rotations $SO(2)$, and the linear operator is the point-wise sampling.
 Similarly to many of the papers on MRA, our work is inspired by single particle problems using cryo-electron microscopy (cryo-EM) and x-ray free electron lasers (XFEL)---high-resolution structural methods for biological macromolecules  ~\cite{frank2006three,kuhlbrandt2014resolution,singer2018mathematics}. 
-A
 In particular, this work is a first step towards understanding the resolution limits in this modality. In Section~\ref{sec:future_work} we make this connection explicit.
-
 
 In the low noise regime, one can try to estimate the unknown group elements (that is, rotations) using one of many synchronization methods~\cite{singer2011angular,bandeira2015non,boumal2016nonconvex,chen2018projected,singer2011three}.
 Once those elements are known, estimating $x$ is a linear problem. 
@@ -96,21 +91,25 @@ In this work we propose two methods to circumvent this limit.
 The first approach relies on features of the measurements which are invariant 
 under rotations. In the limit of $N,\sigma\to\infty$, it was shown that this strategy achieves the optimal  estimation rate---that is, no other method can obtain accurate estimation of the signal with fewer measurements~\cite{bandeira2017optimal,bandeira2017estimation,abbe2018multireference,abbe2018estimation}. Based on this approach, different algorithmic methods were proposed under different MRA setups~\cite{bendory2017bispectrum,perry2017sample,abbe2018multireference,boumal2018heterogeneous,chen2018spectral,ma2018heterogeneous,bandeira2014multireference}, as well as for  cryo-EM and XFEL~\cite{kam1980reconstruction,liu2013three,kurta2017correlations,levin20173d,bendory2018toward,pande2018ab,von2018structure}. 
 
-From reasons that are explained later on, we employ the invariant approach only for the theoretical analysis, carried out in Sections~\ref{sec:invariants} and~\ref{sec:analysis}. As a computational framework, we devise an expectation-maximization (EM) algorithm, which marginalizes over the rotations rather than estimating then explicitly.  The EM algorithm is explained in detail in Section~\ref{sec:EM}, followed by numerical experiments.  
+From reasons that are explained later on, we employ the invariant approach only for the theoretical analysis, carried out in Sections~\ref{sec:background} and~\ref{sec:theory}. As a computational framework, we devise an expectation-maximization (EM) algorithm, which marginalizes over the rotations rather than estimating then explicitly.  The EM algorithm is explained in detail in Section~\ref{sec:EM}, followed by numerical experiments.  
 
-\section{Theory} 
+\section{Background} \label{sec:background}
 
 \subsection{Rotationally invariant features} \label{sec:invariants}
 
-Invariants to rotations are easily to understand in the Fourier domain.
-Let $\hat{z}[k]\in \C^L$ be the $k$th Fourier coefficient of a signal $z$. Rotating the signal by an angle $\alpha$ in the space domain is equivalent to multiply its $k$th Fourier coefficient by $e^{\I k\alpha}$. Hence, a $q$th order rotationally invariant is of the form
+Invariants to rotations can be understood both in space and Fourier domains.
+Let $\hat{z}[k]\in \C^L$ be the $k$th Fourier coefficient of a signal $z\in\R^L$. Rotating the signal by an angle $\alpha$ in the space domain is equivalent to multiply its $k$th Fourier coefficient by $e^{\I k\alpha}$. Hence, a $q$th order rotationally invariant is of the form
 \begin{equation}
-\hat{z}[k_1],\ldots \hat{z}[k_{q-1}]{\hat{z}[-k_1-\cdots-k_{q-1}]}.
+\hat{M}_q[k_1,\ldots,k_{q-1}]=\hat{z}[k_1],\ldots \hat{z}[k_{q-1}]{\hat{z}[-k_1-\cdots-k_{q-1}]}.
 \end{equation} 
 In other words, these monomials remain unchanged under rotation. 
+In the space domain, these invariants are called autocorrelations and are given by 
+\begin{equation}
+M_q[\ell_1,\ldots,\ell_{q-1}]=\frac{1}{N}\sum_{i=1}^N z[i]z[i+\ell_1]\ldots z[i+\ell_{q-1}].
+\end{equation} 
 
-In this work, we make use of the first three invariants. The first invariant is the zero frequency $\mu_z = z[0]$ (equivalently in the space domain, the mean). The second invariant is the power spectrum of the signal $P_z[k]=|z[k]|^2$ for $k=0,\ldots,L-1$. The mean and the power spectrum do not determine a signal uniquely. 
-Thus, we make use of the third invariant, the bispectrum, defined by~\cite{tukey1953spectral}
+In this work, we make use of the first three invariants. The first invariant is the zero frequency $M_1 = \hat{z}[0]$ (equivalently, in the space domain, the mean of the signal). The second invariant is the power spectrum of the signal $P_z[k]=|z[k]|^2$ for $k=0,\ldots,L-1$. The mean and the power spectrum do not determine a signal uniquely. 
+Thus, we make use of the third invariant, the bispectrum, defined by~\cite{tukey1953spectral,sadler1992shift}
 \begin{equation}
 B_z[k_1,k_2] = z[k_1]z[k_2]z[-k_1-k_2].
 \end{equation}
@@ -122,42 +121,6 @@ In Section~\ref{sec:future_work} we discuss the ramifications of employing highe
 
 %The invariants can be easily estimated from the data
 %We should discuss mention that our result say that you can sub-sample the third-order autocorrelation by a large factor and still identify the signal. This is somehow related to the sub-Nyquist literature. 
-%
-%
-%
-%
-%In this work, we mainly focus on the high noise regime 
-%
-%
-%In addition to the continuous case, we consider the \emph{discrete \SR model}. Let us denote by $\T_T\subset S^1$ the equally-spaced grid 
-%\begin{equation} \label{eq:grid}
-%\mathcal{T}_T:=\left\{0,\ldots,\frac{T-1}{T}\right\}.
-%\end{equation}
-%In the discrete mode we study the case where $\theta$ is rotated on $\T_B$ and then sampled on $\T_{B/K}=\T_{L}$.
-%Under this model, the samples of the $i$th measurement can be  written as
-%\begin{equation}
-%y_i[\ell] = x\left(\frac{\ell K+\theta_i}{B}\right)=x\left(\frac{\ell}{L} + \frac{\theta_i}{B}\right), \quad \ell=0,\ldots L-1,
-%\end{equation}
-%for some random $\theta_i\in\{0,\ldots B-1\}$. 
-%In this case, $y$ can be expanded by a Fourier series as
-%\begin{eqnarray}
-%y_\tau[\ell] = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b \left(\frac{\ell}{L} + \frac{\tau}{B}\right) }.
-%\end{eqnarray}
-%
-%The discrete model can be formulated conveniently in a matrix-vector notation as  
-%\begin{equation} \label{eq:discrete_model}
-%y^d = P_BR_{\theta_B} x^d + \varepsilon,
-%\end{equation}
-%where $x^d\in\mathbb{R}^{B}$ is the restriction of $x$ to $\T_B$, $R_{\theta_B}$ is a circular shift (uniformly distributed) over  $\T_B$ and the sampling operator $P_B\in\mathbb{R}^{B\times B}$ is a diagonal matrix, whose diagonal is composed of 1's every other $K$ entry, and zero otherwise
-%
-%The main goal of this work is to analyze the conditions enabling accurate estimate of $x$ in the continuous and discrete models in high noise regimes. As we show, accurate recovery depends on to ratios: the number of measurements as a function of the noise level, and the number of required samples as a function of the signal's bandwidth. Since our analysis is based on the method of moments, the required number of measurements scales asymptotically as $\sigma^{2d}$, where $d$ is the higher-order moment used~\cite{abbe2018estimation,bandeira2017estimation}. 
-%In this degree we use the lowest-order moment possible for \SR---the bispectrum. Lower order moments do not suffice to determine a signal uniquely, a fortiori for \SR. Using the bispectrum requires the number of measurements $N$ to scale, at least, as $\sigma^6$. 
-%As discussed in Section~\ref{sec:future_work}, if more measurements are available, one use higher moments to resolve even higher frequencies. 
-%\TODO{I am using moments/invariants interchangeably}
-%%
-%\section{Analysis} \label{sec:analysis}
-
-%We start by rigorous analysis of the discrete model in Section~\ref{sec:discrete_analysis} and deriving Theorem~\ref{thm:discrete}. Then, several intermediate calculations in Section~\ref{sec:expressions}  lead to the analysis of the continuous case and Conjecture~\ref{conj:continuous}.
 
 \subsection{The discrete model} \label{sec:discrete_analysis}
 
@@ -173,17 +136,42 @@ Let us denote by $\T_T\subset S^1$ the equally-spaced grid
  y_i^d[\ell] = x\left(\frac{\ell K+\theta_i}{B}\right) + \varepsilon_i[\ell]=x\left(\frac{\ell}{L} + \frac{\theta_i}{B}\right)+\varepsilon_i[\ell], \quad \ell=0,\ldots L-1,
  \end{equation}
  for some random $\theta_i\in\{0,\ldots B-1\}$. The super script $y^d$ indicates that the measurements are taken from the discrete model. 
-% In this case, $y$ can be expanded by a Fourier series as
-% \begin{eqnarray}
-% y_\tau[\ell] = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b \left(\frac{\ell}{L} + \frac{\tau}{B}\right) }.
-% \end{eqnarray}
- 
- %The discrete model can be formulated conveniently in a matrix-vector notation as  
- %\begin{equation} \label{eq:discrete_model}
- %y^d = P_BR_{\theta_B} x^d + \varepsilon,
- %\end{equation}
- %where $x^d\in\mathbb{R}^{B}$ is the restriction of $x$ to $\T_B$, $R_{\theta_B}$ is a circular shift (uniformly distributed) over  $\T_B$ and the sampling operator $P_B\in\mathbb{R}^{B\times B}$ is a diagonal matrix, whose diagonal is composed of 1's every other $K$ entry, and zero otherwise
 
+The following lemma reveals the connection between the autocorrelations in the discrete and the continuous models. The proof of the lemma is technical and we leave it to Appendix~\ref{sec:proof_lem:discrete_continuous}.
+\TODO{Need to written prudently, and to mention that the sum converge to the expectation a.s.}
+\begin{lemma} \label{lem:discrete_continuous}
+Let $\E M_q$ and $\E M_q^d$ denote the expected autocorrelations in the continuous and discrete model, respectively.
+Then, 
+\begin{align}
+\E M_1 = \E M_1^d &= \hat{x}[0],
+\end{align}
+and
+\begin{align}
+\E M_2[n] = \E M_1^d[n] &= \sum_{b=-\tB}^{\tB}\vert \hat{x}[b]\vert ^2e^{2\pi\I bn/L}.
+\end{align}
+The third-order autocorrelation of the  discrete model is given by 
+\begin{align}
+\E M_3^d[n_1,n_2] &= \sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)\bmod B]e^{-2\pi\I (b_1n_1 + b_2n_2)/L}.
+\end{align}
+The third-order autocorrelation of the continuous model takes on the form 
+\begin{align}
+\E M_3^d[n_1,n_2] &= \sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)]e^{-2\pi\I (b_1n_1 + b_2n_2)/L}.
+\end{align}
+\end{lemma}
+
+Lemma~\ref{lem:discrete_continuous} provides us a very simple reduction from the discrete case to the continuous one. 
+
+\TODO{In addition, to mention the spectral aliasing. Also, is the sampling is twice or more B then again we get the same expression as in the continuous model}
+
+\TODO{Intuition why the continuous case should be easier}
+Yet, in many cases the aperiodic is provably easier than the periodic case since entries from other sides of the signal (e.g.,
+low and high frequencies) do not mixed up. 
+For instance, it is well know that a generic two-dimensional signal can be determined uniquely from its aperiodic autocorrelation but not from its periodic autocorrelation; see for example~\cite{hayes1982reconstruction}.\footnote{In practice, the mapping between the aperiodic autocorrelation and a signal might be extremely sensitive~\cite{barnett2018geometry}.}. The aperiodicity also plays a key role in other related fields, such as ultra-short pulse characterization~\cite{bendory2018signal}. 
+Based on that intuition, we conjecture that the same super-resolution factor remains true for the continuous case, possibly with a different constant. 
+
+ 
+\section{Theory}
+\label{sec:theory}
 To analyze this model, we introduce notation
 \begin{equation} \label{eq:sub_signals}
 x_i[\ell] = x[K\ell + i], \quad \ell=0,\ldots,L-1.
@@ -196,13 +184,8 @@ y^d =  R_{\theta_{L}} x_{v} + \varepsilon,
 \end{equation}
 where $v$ distributed uniformly over $\{0,\ldots,K-1\}$ and $R_{\theta_L}$ is a circular shift on the grid $\T_L$. 
 
-The model~\eqref{eq:heter_mra} has been studied in the literature under the name \emph{heterogeneous multi-reference alignment}and analyzed using the bispectrum~\cite{perry2017sample,bandeira2017estimation,boumal2018heterogeneous}. %Under the assumption of uniform distribution of cyclic shifts, the moments are completely equivalent to polynomials that are invariant under cyclic shifts. In particular, we make use of the first three invariants.  These invariants, called the mean, the power spectrum and the bispectrum, can be described readily in the Fourier transform. In particular, for a signal $z\in\R^p$, we define
-%\begin{align}
-%&\mu_z = \hat{z}[0], \nonumber \\
-%&P_z[q] = \vert \hat{z}[q]\vert^2, \quad q=0,\ldots,p-1\\
-%&B_z[q_1,q_2] = \hat{z}[q_1]\hat{z}[q_2]\hat{z}[-q_1-q_2], \quad q_1,q_2=0,\ldots,p-1. \nonumber
-%\end{align}  
-%It is well known that the bispectrum determines a generic signal uniquely in a stable manner~\cite{bendory2017bispectrum}. \TODO{Ref}
+The model~\eqref{eq:heter_mra} has been studied in the literature under the name \emph{heterogeneous multi-reference alignment} and analyzed using the bispectrum~\cite{perry2017sample,bandeira2017estimation,boumal2018heterogeneous}. 
+
 In particular, it was shown that in the limit of $N\to\infty$ the linear combination of the invariants can be easily estimated from the data by 
 \begin{align} \label{eq:mix_invariants}
 \frac{1}{N}\sum_{i=1}^N \mu_{y_i^d} &= \frac{1}{K}\sum_{i=1}^K \mu_{x_i}, \nonumber\\
@@ -211,7 +194,6 @@ In particular, it was shown that in the limit of $N\to\infty$ the linear combina
 \end{align}
 where $\mathbf{1}\in\mathbb{R}^L$ is a vector of ones, and $A\in\mathbb{R}^{L\times L}$ is a zero matrix except $A[0,0]=3$ and $A[i,0]=A[0,i]=A[i,i]=1$ for $i=1,\ldots,L-1$.
 Given $\sigma^2$, one can remove the bias factors easily. 
-%We first discuss how to recover the signal $x_1,\ldots,x_k$ from~\eqref{eq:mix_invariants} up to a group of symmetries, and later discuss how to  choose the signal out of this set. 
 
 The identifiability of a set of $K$ signals from the mix of their  invariants~\eqref{eq:mix_invariants} was studied~\cite{bandeira2017estimation}.
 Clearly, one can hope to identify the signals only up  to permutation (between the $K$ signals) and cyclic shifts (of each signal separately). 
@@ -242,9 +224,8 @@ Strong theoretical support was provided in~\cite{weinthesis}. In particular,  it
 In this case, the highest frequency that can be estimated scales as $B\leq L^{3/2}$ (up to possible log factors). 
 \TODO{This is true for signals with white spectrum... for our case the bound seems smaller since the signals are smooth}
 
-
 Proposition~\ref{prop1} suggests that all entries of the underlying signal can be identified in the regime of~$\mathcal{P}(L)L>B$. However, given all possible cyclic shifts and permutations, there are $(L^K)\cdot K!$ \TODO{check this number}  different ways to order the signals $x_1,\ldots,x_K$. Hence, to guarantee unique recovery of the signal, up to cyclic shift, one must impose some prior on the signal, such as smoothness. In the following proposition we show that such unique ordering is possible under rather mild conditions.
-The proposition is proved  in Appendix~\ref{sec:proof_bandlimit}.
+%The proposition is proved  in Appendix~\ref{sec:proof_bandlimit}.
 \begin{prop} \label{prop:bandlimit}
 Suppose that $x$ is generic, and let 
 \begin{equation} %\label{eq:sub_signals}
@@ -275,7 +256,6 @@ The Fourier transform of $Zu$ is then given by
 \end{equation}
 In other words, $\widehat{(Zu)}[m] = \hat{u}[m\bmod L]$.
 
-
 The Fourier transform of $ZR_{r_k}u$ is  given by 
 \begin{equation}
 \widehat{(ZR_{r_k}u)}[m] = e^{-2\pi\I m r_k L} \hat{u}[m\bmod L], \quad m=0,\ldots,B-1.
@@ -295,137 +275,6 @@ Then, For $K\leq 15$ and for $\mathcal{P}(L)L>B$ (given in~\eqref{eq:Pl}), one c
 If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for any $K$.
 \end{thm}
 
-\subsection{From the discrete to the continuous model} \label{sec:expressions}
-
-We are now turning our attention to explicit computation of the moments as a function of the Fourier coefficients of $x$ (the high-resolution signal). This computation will serve to move from the discrete setting to the continuous one. 
-
-We start by computing the mean, which is defined as the expected mean of the measurements: 
-\begin{equation}
-\begin{split}
-M_1 = \E\left\{ \frac{1}{L} \sum_{\ell=0}^{L-1} y^d[\ell]\right\} =  \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} y^d[\ell] =  \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1}
-\sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b \left(\frac{\ell}{L} + \frac{\tau}{B}\right) }.
-\end{split}
-\end{equation}
-Since $\frac{1}{B}\sum_{\tau=0}^{B-1}e^{2\pi\I b \tau/B}=\delta_b$, we conclude that 
-\begin{equation} \label{eq:mean}
-\begin{split}
-M_1 = \hx[0].
-\end{split}
-\end{equation}
-This  implies, agreeing with~\eqref{eq:mix_bispectra} that the average over all measurements is just the mean of the signal.  
-
-We can now proceed with the second moment:
-\begin{equation} \label{eq:ps}
-\begin{split}
-M_2[n] &= \E\left\{\frac{1}{L}\sum_{\ell=0}^{L-1} y^d[\ell]y^d[\ell-n]\right\} =  \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} y^d[\ell]y^d[\ell-n] \\ &=  \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1}
-\left(\sum_{b_1=-\tB}^{\tB}\hat{x}[b_1]e^{2\pi\I b_1 \left(\frac{\ell}{L} + \frac{\tau}{B}\right)} \right)
-\left(\sum_{b_2=-\tB}^{\tB}\overline{\hx}[b_2]e^{-2\pi\I b_2 \left(\frac{\ell-n}{L} + \frac{\tau}{B}\right)} \right) \\
-&=
-\sum_{b=-\tB}^{\tB}\vert \hat{x}[b]\vert ^2e^{2\pi\I bn/L}.
-\end{split}
-\end{equation}
-Taking the $L$-points DFT of $M_2$ we get 
-\begin{equation}
-\begin{split}
-P[q] &= \sum_{n=0}^{L-1}M_2[n]e^{-2\pi\I nq/L} = \sum_{b=-\tB}^{\tB}\vert \hat{x}[b]\vert^2\sum_{n=0}^{L-1}e^{-2\pi\I n(q-b)/L}.
-\end{split}
-\end{equation}
-The last term is not zero if and only if $b = q + pL$ for some $p\in\mathbb{Z}$.  Hence, we conclude that the observed power spectrum is a mix of power spectra:
-\begin{equation}
-\begin{split}
-\frac{1}{L}\hat{M}_2[q] &=  \sum_{p=0}^{K-1} \vert \hat{x}[(q+PL)\bmod L]\vert^2.
-\end{split}
-\end{equation}
-
-The more interesting computation is of the bispectrum.
- The third-order autocorrelation is given by 
-\begin{equation} \label{eq:3rd_moments}
-\begin{split}
-M_3[n_1,n_2] &= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} y_\tau[\ell] y_\tau[\ell-n_1] y_\tau[\ell-n_2]\\ 
-&= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} x\left(\frac{\ell}{L} + \frac{\tau}{B}\right) x\left(\frac{\ell-n_1}{L} + \frac{\tau}{B}\right)
-x\left(\frac{\ell-n_2}{L} + \frac{\tau}{B}\right)\\
-&= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} 
-\left(\sum_{b_1=-\tB}^{\tB}\hat{x}[b_1]e^{2\pi\I b_1 \left(\frac{\ell-n_1}{L} + \frac{\tau}{B}\right) }\right) 
-\left(\sum_{b_2=-\tB}^{\tB}\hat{x}[b_2]e^{2\pi\I b_2 \left(\frac{\ell-n_2}{L} + \frac{\tau}{B}\right) } \right) \\
-&\times \left(\sum_{b_3=-\tB}^{\tB}\hat{x}[b_3]e^{2\pi\I b_3 \left(\frac{\ell}{L} + \frac{\tau}{B}\right) }\right). 
-\end{split}
-\end{equation}
-By changing the order of the summations, and noting that 
-\begin{equation} \label{eq:delta}
-\frac{1}{B}\sum_{\tau=0}^{B-1}e^{2\pi\I\tau (b_1+b_2+b_3)/B} = \delta_{b_1+b_2+b_3\bmod B},
-\end{equation}
-we get 
-\begin{equation}
-\begin{split}
-M_3[n_1,n_2] = 
-\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)\bmod B]e^{-2\pi\I (b_1n_1 + b_2n_2)/L}.
-\end{split}
-\end{equation}
-This expression can be understood in the Fourier domain by taking the $L\times L$ points DFT: 
-\begin{equation} \label{eq:mix_bispectra}
-\begin{split}
-B[q_1,q_2] &= \sum_{n_1=0}^{L-1} \sum_{n_2=0}^{L-1}
-M_3[n_1,n_2]e^{-2\pi\I(n_1q_1+n_2q_2)/L} \\ &=  
-\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)\bmod B]e^{-2\pi\I (n_1(b_1+q_1) + n_2(b_2+q_2))} \\ & = \sum_{p_1=0}^{K-1} \sum_{p_2=0}^{K-1} \hat{x}[(q_1 + p_1L)\bmod L] \hat{x}[(q_2 + p_2L)\bmod L]\hat{x}[(-q_1-q_2 - (p_1+p_2)L)\bmod B].
-\end{split}
-\end{equation}
-\begin{cor}
-	If $K\leq 15$ and $\mathcal{P}(L)L>B$, then the set of signals $\mathcal{S}(x_1,\ldots,x_K)$ are determined uniquely from~\eqref{eq:mean},\eqref{eq:ps} and~\eqref{eq:mix_bispectra}. 
-	If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for any $K$. 
-\end{cor}
-
-\subsection{The continuous model} \label{sec:analysis_continuous}
-
-Next, we examine the discrete model while letting $\theta$ to rotate on a finer sampling grid, while fixing the sampling grid $\mathcal{L}_0$ and the signal's bandwidth.  
-
-Let $p$ denotes the over-sampling factor of the sampling grid of $\theta$. Similarly to~\eqref{eq:3rd_moments}, we can calculate  the third-order autocorrelation to be
-\begin{equation}
-\begin{split}
-M_3[n_1,n_2] 
-&= \frac{1}{LBp}\sum_{\tau=0}^{pB-1}\sum_{\ell=0}^{L-1} 
-\left(\sum_{b_1=-\tB}^{\tB}\hat{x}[b_1]e^{2\pi\I b_1 \left(\frac{\ell-n_1}{L} + \frac{\tau}{pB}\right) }\right) 
-\left(\sum_{b_2=-\tB}^{\tB}\hat{x}[b_2]e^{2\pi\I b_2 \left(\frac{\ell-n_2}{L} + \frac{\tau}{pB}\right) } \right) \\
-&\times \left(\sum_{b_3=-\tB}^{\tB}\hat{x}[b_3]e^{2\pi\I b_3 \left(\frac{\ell}{L} + \frac{\tau}{pB}\right) }\right). 
-\end{split}
-\end{equation}
-Similarly to~\eqref{eq:delta}, we have
-\begin{equation} \label{eq:delta2}
-\frac{1}{pB}\sum_{\tau=0}^{pB-1}e^{2\pi\I\tau (b_1+b_2+b_3)/pB} = \delta_{b_1+b_2+b_3\bmod pB},
-\end{equation}
-and hence we get the constraint $$b_3=(-b_1-b_2)\bmod pB=-b_1-b_2,$$
-where the last equality follows from the range of $b_1,b_2$.
-Hence, we directly get 
-\begin{equation} \label{eq:3rd_moment_zeros}
-\begin{split}
-M_3[n_1,n_2] = 
-\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2]e^{-2\pi\I (b_1n_1 + b_2n_2)/L},
-\end{split}
-\end{equation}
-and 
-\begin{equation} \label{eq:mixed_bispectra_zeros}
-\begin{split}
-B[q_1,q_2] &= \sum_{n_1=0}^{L-1} \sum_{n_2=0}^{L-1}
-M_3[n_1,n_2]e^{-2\pi\I(n_1q_1+n_2q_2)/L} \\ &= 
-\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2]e^{-2\pi\I (n_1(b_1+q_1) + n_2(b_2+q_2))} \\ & =
-  \sum_{p_1=-\lfloor\frac{K}{2} \rfloor}^{\lfloor\frac{K}{2}\rfloor} \sum_{p_2=-\lfloor\frac{K}{2}\rfloor}^{\lfloor\frac{K}{2}\rfloor} \hat{x}[q_1 + p_1L] \hat{x}[q_2 + p_2L]\hat{x}[-q_1-q_2 - (p_1+p_2)L].
-\end{split}
-\end{equation}
-
-This implies that we get the same bispectrum as in~\eqref{eq:mix_bispectra}, without the wrapped-around of the frequencies. 
-That is, the bispectrum remains the same for any entry $\vert b_1 + b_2\vert \leq B$. For all other entries, the expression~\eqref{eq:mixed_bispectra_zeros} is zero, whereas~\eqref{eq:mix_bispectra} is generally not. 
-This is true for any $p\geq 2$. 
-This follows the intuition that if the signal is band-limited, then the taking more and more samples does not make a difference. \TODO{Does it?} 
-In particular, it holds true for $p\to\infty$---that is, when $\theta$ is rotated continuously on the circle. In this case, the discrete model converges to the continuous model, which is the main interest of this paper. In appendix~\ref{sec:continuous_bispectrum} we derive expression~\eqref{eq:mixed_bispectra_zeros} directly in the continuum, without first considering the discrete case. 
-
-Unfortunately, the results from~\cite{bandeira2017estimation} for bispectrum demixing assume a generic, periodic, signals. Thus, the expression of~\eqref{eq:mixed_bispectra_zeros} does not fall into this category and Proposition~\ref{prop1} does not hold. Yet, in many cases the aperiodic is provably easier than the periodic case since entries from other sides of the signal (e.g.,
-low and high frequencies) do not mixed up. 
-For instance, it is well know that a generic two-dimensional signal can be determined uniquely from its aperiodic autocorrelation but not from its periodic autocorrelation; see for example~\cite{hayes1982reconstruction}.\footnote{In practice, the mapping between the aperiodic autocorrelation and a signal might be extremely sensitive~\cite{barnett2018geometry}.}. The aperiodicity also plays a key role in other related fields, such as ultra-short pulse characterization~\cite{bendory2018signal}. 
-Based on that intuition, we conjecture that the same super-resolution factor remains true for the continuous case, possibly with a different constant. 
-
-\begin{conj} \label{conj:continuous}
-Consider the  continuous periodic model~\eqref{eq:continuous_measurements} when $N\to\infty$, and that $x$ is a B-bandlimited signal, the  one can identify $x$ up to shift as long as $K\leq C \sqrt{B}$, for some constant $C$.
-\end{conj}
-
 \section{An expectation-maximization algorithm }
 \label{sec:EM}
 
@@ -443,7 +292,6 @@ Hence,  a simple calculation shows that the log-likelihood  then takes the form 
 \log \mathcal{L}(y|x)  = -\frac{1}{2\sigma^2}\sum_{i=1}^{N}\|y_i - TR_{\theta_i}x\| - \frac{1}{2}x^T\Sigma^{-1}x.
 \end{equation}
 The algorithm aims to compute the MMLE by marginalizing over the the cyclic shifts, that is,  $\log \mathcal{L}(y|x)  = \sum_{\theta\in\mathcal{T}}\log \mathcal{L}(y|\theta,x)$. Computing the MMLE directly is intractable as one needs to evaluate the log likelihood at  an exponential number of combinations of rotations. The EM suggests to try to obtain the MMLE iteratively. 
-
 
 Each EM iteration consists of two steps.
 The first, called the E-step, computes the expected value of the likelihood function  given the current estimate of the signal $x_t$ and the data $y_1,\ldots,y_N$
@@ -506,51 +354,159 @@ In the cryo-EM case, $g\in SO(3)$ and the Fourier transform of $x$ is assumed to
 
 \appendix
 
-%\section{Proof of Proposition~\ref{prop:bandlimit}} \label{sec:proof_bandlimit}
-%Suppose that $x_1,\ldots,x_K\in\R^L$ are known.
-%The combined signal is then given by 
-%\begin{equation}
-%x = \sum_{i=1}^K T_kZR_kx_k,
-%\end{equation}
-%where $R_k$ are (unknown) cyclic shifts of the signals $x_k$, $Z$ denotes a zero-padding operator (by a factor of $K$) so that $Zx_k\in\mathbb{R}^B$, and $T_k$ shifts the zero-padded signals by $k$ entries for $k=0,\ldots, K-1$. 
-%For instance, for $K=3$ we have: 
-%\begin{equation}
-%Zx = (x[0],0,0,x[1],0,0,x[2],...)\in\mathbb{R}^B.
-%\end{equation}
-%
-%The Fourier transform of a signal $u\in\mathbb{R}^{L}$ is defined by 
-%\begin{equation}
-%\hat{u}[m]=\sum_{\ell=0}^{L-1}u[\ell]e^{-2\pi\I m\ell /L}, \quad m=0,\ldots,L-1. 
-%\end{equation}
-%The Fourier transform of $Zu$ is then given by 
-%\begin{equation}
-%\widehat{(Zu)}[m] = \sum_{\ell=0}^{L-1}u[\ell]e^{-2\pi\I m\ell /(B/K)}, \quad m=0,\ldots,B-1.
-%\end{equation}
-%In other words, $\widehat{(Zu)}[m] = \hat{u}[m\bmod L]$.
-%
-%
-%The Fourier transform of $ZR_{r_k}u$ is  given by 
-%\begin{equation}
-%\widehat{(ZR_{r_k}u)}[m] = e^{-2\pi\I m r_k L} \hat{u}[m\bmod L], \quad m=0,\ldots,B-1.
-%\end{equation}
-%This signal is shifted once again and we get
-%\begin{eqnarray} \label{eq:Fourier_structure}
-%\hat{x}[m] = \sum_{k=1}^K e^{-2\pi\I m( p_k+r_k K)/B} \hat{x}_k[m \bmod L]. 
-%\end{eqnarray}
-%for $m=0,\ldots,B-1$, 
-%where $r_k$ is a chosen randomly uniformly over $\{0,\ldots,L-1\}$, independently for each $k$, and $p_k$ represents the permutations, that is, $p_k\in\{0,\ldots K-1\}$, $p_k\neq p_\ell$ for all $k\neq \ell$ (note that we do have the freedom to fix one signal and its shift). 
-%
-%%Let us denote the set of rotations and permutation that satisfy the assumption  $\hx[m]=x_m\neq 0$ by $\tilde{p}_k,\tilde{r}_k$. Let $E_k:=e^{-2\pi\I m( p_k+r_k K)/B}$, $\tilde{E}_k:=e^{-2\pi\I m( \tilde{p}_k+\tilde{r}_k K)/B}$ and $\hx_k:=\hat{x}_k[m \bmod L]$ for fixed $m$. Now, let us assume that there exists another $E_k$ that satisfies the constraint. In this case,
-%%\begin{equation} \label{eq:inner_product}
-%%x_m=\left\langle E_k,\hx_k\right\rangle = \left\langle \tilde{E}_k,\hx_k\right\rangle \quad \Rightarrow \quad\left\langle \tilde{E}_k -{E}_k,\hx_k\right\rangle =0.
-%%\end{equation} 
-%%For generic $x$, the orthogonal complement of $\hx_k$ is Lebesgue measure zero and therefore~\eqref{eq:inner_product} is not satisfied generically.  
-%%
-%%For $x_m=0$, one can always multiply both sides of~\eqref{eq:Fourier_structure} by $e^{2\pi\I m q }$ for some integer $q$. This will keep the structure of $E_K$ and therefore there is no way to avoid this symmetry. 
-%
-\section{Derivation of the bispectrum in the continuous model} \label{sec:continuous_bispectrum}
+\section{Proof of Lemma~\ref{lem:discrete_continuous}}  
+\label{sec:proof_lem:discrete_continuous}
 
-In this appendix, we compute the bispectrum explicitly for the continuous setting. The third-order autocorrelation is given by (by averaging over all shifts $\ell\in\mathcal{L}$, and all rotations on the circle)
+We start by computing the mean, which is defined as the expected mean of the measurements: 
+\begin{equation}
+\begin{split}
+\E M_1^d = \E\left\{ \frac{1}{L} \sum_{\ell=0}^{L-1} y^d[\ell]\right\} =  \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} y^d[\ell] =  \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1}
+\sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b \left(\frac{\ell}{L} + \frac{\tau}{B}\right) }.
+\end{split}
+\end{equation}
+Since $\frac{1}{B}\sum_{\tau=0}^{B-1}e^{2\pi\I b \tau/B}=\delta_b$, we conclude that 
+\begin{equation} \label{eq:mean}
+\begin{split}
+M_1 = \hx[0].
+\end{split}
+\end{equation}
+%This  implies, agreeing with~\eqref{eq:mix_bispectra} that the average over all measurements is just the mean of the signal.  
+
+We can now proceed with the second moment:
+\begin{equation} \label{eq:ps}
+\begin{split}
+\E M_2^d[n] &= \E\left\{\frac{1}{L}\sum_{\ell=0}^{L-1} y^d[\ell]y^d[\ell-n]\right\} =  \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} y^d[\ell]y^d[\ell-n] \\ &=  \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1}
+\left(\sum_{b_1=-\tB}^{\tB}\hat{x}[b_1]e^{2\pi\I b_1 \left(\frac{\ell}{L} + \frac{\tau}{B}\right)} \right)
+\left(\sum_{b_2=-\tB}^{\tB}\overline{\hx}[b_2]e^{-2\pi\I b_2 \left(\frac{\ell-n}{L} + \frac{\tau}{B}\right)} \right) \\
+&=
+\sum_{b=-\tB}^{\tB}\vert \hat{x}[b]\vert ^2e^{2\pi\I bn/L}.
+\end{split}
+\end{equation}
+Taking the $L$-points DFT of $M_2$ we get 
+\begin{equation}
+\begin{split}
+\hat{M}_2^d[k] &= \sum_{n=0}^{L-1}M_2[n]e^{-2\pi\I nk/L} = \sum_{b=-\tB}^{\tB}\vert \hat{x}[b]\vert^2\sum_{n=0}^{L-1}e^{-2\pi\I n(k-b)/L}.
+\end{split}
+\end{equation}
+The last term is not zero if and only if $b = k + pL$ for some $p\in\mathbb{Z}$.  Hence, we conclude that the observed power spectrum is a mix of power spectra:
+\begin{equation}
+\begin{split}
+\frac{1}{L}\hat{M}_2[q] &=  \sum_{p=0}^{K-1} \vert \hat{x}[(q+PL)\bmod L]\vert^2.
+\end{split}
+\end{equation}
+
+The more interesting computation is of the bispectrum.
+The third-order autocorrelation is given by 
+\begin{equation} \label{eq:3rd_moments}
+\begin{split}
+\E M_3^d[n_1,n_2] &= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} y_\tau[\ell] y_\tau[\ell-n_1] y_\tau[\ell-n_2]\\ 
+&= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} x\left(\frac{\ell}{L} + \frac{\tau}{B}\right) x\left(\frac{\ell-n_1}{L} + \frac{\tau}{B}\right)
+x\left(\frac{\ell-n_2}{L} + \frac{\tau}{B}\right)\\
+&= \frac{1}{LB}\sum_{\tau=0}^{B-1}\sum_{\ell=0}^{L-1} 
+\left(\sum_{b_1=-\tB}^{\tB}\hat{x}[b_1]e^{2\pi\I b_1 \left(\frac{\ell-n_1}{L} + \frac{\tau}{B}\right) }\right) 
+\left(\sum_{b_2=-\tB}^{\tB}\hat{x}[b_2]e^{2\pi\I b_2 \left(\frac{\ell-n_2}{L} + \frac{\tau}{B}\right) } \right) \\
+&\times \left(\sum_{b_3=-\tB}^{\tB}\hat{x}[b_3]e^{2\pi\I b_3 \left(\frac{\ell}{L} + \frac{\tau}{B}\right) }\right). 
+\end{split}
+\end{equation}
+By changing the order of the summations, and noting that 
+\begin{equation} \label{eq:delta}
+\frac{1}{B}\sum_{\tau=0}^{B-1}e^{2\pi\I\tau (b_1+b_2+b_3)/B} = \delta_{b_1+b_2+b_3\bmod B},
+\end{equation}
+we get 
+\begin{equation}
+\begin{split}
+M_3[n_1,n_2] = 
+\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)\bmod B]e^{-2\pi\I (b_1n_1 + b_2n_2)/L}.
+\end{split}
+\end{equation}
+This expression can be understood in the Fourier domain by taking the $L\times L$ points DFT: 
+\begin{equation} \label{eq:mix_bispectra}
+\begin{split}
+B[q_1,q_2] &= \sum_{n_1=0}^{L-1} \sum_{n_2=0}^{L-1}
+M_3[n_1,n_2]e^{-2\pi\I(n_1q_1+n_2q_2)/L} \\ &=  
+\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)\bmod B]e^{-2\pi\I (n_1(b_1+q_1) + n_2(b_2+q_2))} \\ & = \sum_{p_1=0}^{K-1} \sum_{p_2=0}^{K-1} \hat{x}[(q_1 + p_1L)\bmod L] \hat{x}[(q_2 + p_2L)\bmod L]\hat{x}[(-q_1-q_2 - (p_1+p_2)L)\bmod B].
+\end{split}
+\end{equation}
+
+%\subsection{The continuous model} \label{sec:analysis_continuous}
+%
+%Next, we examine the discrete model while letting $\theta$ to rotate on a finer sampling grid, while fixing the sampling grid $\mathcal{L}_0$ and the signal's bandwidth.  
+%
+%Let $p$ denotes the over-sampling factor of the sampling grid of $\theta$. Similarly to~\eqref{eq:3rd_moments}, we can calculate  the third-order autocorrelation to be
+%\begin{equation}
+%\begin{split}
+%M_3[n_1,n_2] 
+%&= \frac{1}{LBp}\sum_{\tau=0}^{pB-1}\sum_{\ell=0}^{L-1} 
+%\left(\sum_{b_1=-\tB}^{\tB}\hat{x}[b_1]e^{2\pi\I b_1 \left(\frac{\ell-n_1}{L} + \frac{\tau}{pB}\right) }\right) 
+%\left(\sum_{b_2=-\tB}^{\tB}\hat{x}[b_2]e^{2\pi\I b_2 \left(\frac{\ell-n_2}{L} + \frac{\tau}{pB}\right) } \right) \\
+%&\times \left(\sum_{b_3=-\tB}^{\tB}\hat{x}[b_3]e^{2\pi\I b_3 \left(\frac{\ell}{L} + \frac{\tau}{pB}\right) }\right). 
+%\end{split}
+%\end{equation}
+%Similarly to~\eqref{eq:delta}, we have
+%\begin{equation} \label{eq:delta2}
+%\frac{1}{pB}\sum_{\tau=0}^{pB-1}e^{2\pi\I\tau (b_1+b_2+b_3)/pB} = \delta_{b_1+b_2+b_3\bmod pB},
+%\end{equation}
+%and hence we get the constraint $$b_3=(-b_1-b_2)\bmod pB=-b_1-b_2,$$
+%where the last equality follows from the range of $b_1,b_2$.
+%Hence, we directly get 
+%\begin{equation} \label{eq:3rd_moment_zeros}
+%\begin{split}
+%M_3[n_1,n_2] = 
+%\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2]e^{-2\pi\I (b_1n_1 + b_2n_2)/L},
+%\end{split}
+%\end{equation}
+%and 
+%\begin{equation} \label{eq:mixed_bispectra_zeros}
+%\begin{split}
+%B[q_1,q_2] &= \sum_{n_1=0}^{L-1} \sum_{n_2=0}^{L-1}
+%M_3[n_1,n_2]e^{-2\pi\I(n_1q_1+n_2q_2)/L} \\ &= 
+%\sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2]e^{-2\pi\I (n_1(b_1+q_1) + n_2(b_2+q_2))} \\ & =
+%\sum_{p_1=-\lfloor\frac{K}{2} \rfloor}^{\lfloor\frac{K}{2}\rfloor} \sum_{p_2=-\lfloor\frac{K}{2}\rfloor}^{\lfloor\frac{K}{2}\rfloor} \hat{x}[q_1 + p_1L] \hat{x}[q_2 + p_2L]\hat{x}[-q_1-q_2 - (p_1+p_2)L].
+%\end{split}
+%\end{equation}
+%
+%This implies that we get the same bispectrum as in~\eqref{eq:mix_bispectra}, without the wrapped-around of the frequencies. 
+%That is, the bispectrum remains the same for any entry $\vert b_1 + b_2\vert \leq B$. For all other entries, the expression~\eqref{eq:mixed_bispectra_zeros} is zero, whereas~\eqref{eq:mix_bispectra} is generally not. 
+%This is true for any $p\geq 2$. 
+%This follows the intuition that if the signal is band-limited, then the taking more and more samples does not make a difference. \TODO{Does it?} 
+%In particular, it holds true for $p\to\infty$---that is, when $\theta$ is rotated continuously on the circle. In this case, the discrete model converges to the continuous model, which is the main interest of this paper. In appendix~\ref{sec:continuous_bispectrum} we derive expression~\eqref{eq:mixed_bispectra_zeros} directly in the continuum, without first considering the discrete case. 
+
+%\section{Derivation of the bispectrum in the continuous model} \label{sec:continuous_bispectrum}
+
+Next, we compute the autocorrelations for the continuous setup.
+The first autocorrelation is given by 
+\begin{equation}
+\begin{split}
+\E M_1 = \E\left\{ \frac{1}{L} \sum_{\ell=0}^{L-1} y[\ell]\right\} =
+ \int_{0}^1 \frac{1}{L} \sum_{\ell=0}^{L-1} y[\ell] d\theta = 
+ \int_{0}^1 \frac{1}{L} \sum_{\ell=0}^{L-1} \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b \left(\frac{\ell}{L} + \theta\right) } d\theta. 
+\end{split}
+\end{equation}
+Since $\int_{0}^{1}e^{2\pi\I\theta b}d\theta=\delta_{b}$, we get 
+\begin{equation}
+\begin{split}
+\E M_1 =  \hat{x}[0]. 
+\end{split}
+\end{equation}
+
+Similarly, the second-order autocorrelation can be computed to be 
+\begin{equation}
+\begin{split}
+\E M_2[n] &= \E\left\{ \frac{1}{L} \sum_{\ell=0}^{L-1} y[\ell] y[\ell-n]\right\} =
+\int_{0}^1 \frac{1}{L} \sum_{\ell=0}^{L-1} y[\ell] \overline{y[\ell-n]} d\theta  \\ =
+& \int_{0}^1 \frac{1}{L} \sum_{\ell=0}^{L-1} 
+\left(\sum_{b_1=-\tB}^{\tB}\hat{x}[b_1]e^{2\pi\I b _1\left(\frac{\ell}{L} + \theta\right) }\right) \left(\sum_{b_2=-\tB}^{\tB}\hat{x}[b_2]e^{-2\pi\I b_2\left(\frac{\ell-n}{L} + \theta\right) }\right) d\theta. 
+\end{split}
+\end{equation}
+The integration over $\theta$ imposes that the sum s not zero if and only if $b_1=b_2$ and thus we deduce
+\begin{equation}
+\begin{split}
+\E M_2[n]  =
+&  \sum_{b=-\tB}^{\tB}|\hat{x}[b]|^2e^{2\pi\I bn/L}. 
+\end{split}
+\end{equation}
+
+The third-order autocorrelation is given by (by averaging over all shifts $\ell\in\mathcal{L}$, and all rotations on the circle)
 \begin{equation}
 \begin{split}
 M_3[n_1,n_2] &= \E_{\theta\sim\text{U}[0,1)}\left\{ \sum_{\ell=0}^{L-1}  y_\theta[\ell] y_\theta[\ell-n_1] y_\theta[\ell-n_2]\right\} 
@@ -566,10 +522,9 @@ x\left(\frac{\ell-n_2}{L} + \theta\right)d\theta\\
 Since $\int_{0}^{1}e^{2\pi\I\theta(b_1+b_2+b_3)}d\theta=\delta_{b_1+b_2+b_3}$, we get 
 \begin{equation}
 \begin{split}
-M_3[n_1,n_2] =   \sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB} \hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2]e^{-2\pi\I (b_1n_1+b_2n_2)},
+M_3[n_1,n_2] =   \sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB} \hat{x}[b_1]\hat{x}[b_2]\hat{x}[-b_1-b_2]e^{-2\pi\I (b_1n_1+b_2n_2)}.
 \end{split}
 \end{equation}
-which is exactly~\eqref{eq:3rd_moment_zeros}. Hence, taking the $L\times L$ DFT we get~\eqref{eq:mixed_bispectra_zeros}.
 
 \end{document}
 
