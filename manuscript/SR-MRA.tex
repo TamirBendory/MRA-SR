@@ -39,18 +39,18 @@
 
 \section{Introduction}
 
-We consider the problem of recovering a signal from multiple measurements, each is a noisy rotated  version of the signal. Let $x\in S^1$ be a signal on the circle and  let $R_\theta$ denote a random rotation, where $\theta$ is distributed uniformly on the circle $\theta\sim \text{Uniform}[0,1)$. Together with i.i.d.\ Gaussian noise,  the models reads
+We consider the problem of recovering a signal from multiple measurements, each is a noisy, rotated and sampled version of the signal. Let $x: S^1\rightarrow\R$ be a signal on the circle and  let $R_\theta$ denote a random rotation, that is, $(R_\theta x)(t)= x(t-\theta)$. 
+We assume that $\theta$ is distributed uniformly on the circle and we let $P$ be the sampling operator that collects $L$ equally-spaced samples of the rotated signal. Together with i.i.d.\ Gaussian noise $\varepsilon\in \R^L$,  the model reads
 \begin{align} \label{eq:model}
-y &= P(R_\theta x + \varepsilon), \quad &\varepsilon\sim \mathcal{N}(0,\sigma^2),
+y &= P(R_\theta x) + \varepsilon, \quad & \theta\sim \text{Uniform}[0,1),\quad \varepsilon\sim \mathcal{N}(0,\sigma^2 I_L),
 \end{align}
-where the operator $P$ collects $L$ equally-spaced samples of the rotated signal. Thus, the recorded samples of the $i$th measurement are given by 
+where $I_L$ is the identity matrix of size $L\times L$. The  samples of the $i$th measurement are then given by
 \begin{equation} \label{eq:continuous_measurements}
-y_i[\ell] = \left(R_{\theta_i} x\right)[\ell] + \varepsilon_i[\ell] =  x[\ell/L+\theta_i] + \varepsilon_i[\ell], \quad \ell=0,\ldots,L-1.
+y_i[\ell] = \left(R_{\theta_i} x\right)[\ell] + \varepsilon_i[\ell] =  x[\ell/L-\theta_i] + \varepsilon_i[\ell], \quad \ell=0,\ldots,L-1.
 \end{equation}
 
 Without any assumption on the structure of the signal, one cannot hope to accurately estimate it from finite number of samples. 
-A natural and ubiquitous assumption is that
-the spectrum of the signal is bounded, that us,  it can  be expanded as 
+A natural and ubiquitous assumption is that the signal is bandlimited, that is, it can  be expanded as 
 \begin{eqnarray} \label{eq:fourier_expansion}
 x(t) = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I bt }, \quad t\in[0,1),
 \end{eqnarray}
@@ -58,42 +58,45 @@ so that
 \begin{eqnarray} \label{eq:fourier_expansion}
 y_i[\ell] = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b\left(\frac{\ell}{L}+\theta_i\right) }+ \varepsilon_i[\ell].
 \end{eqnarray}
-The largest non-zero frequency $\tB$ is called the bandlimit, or bandwidth, of the signal.
-The goal of this work is to derive  fundamental conditions for accurate estimate of $x$ from $y$. While the rotations are also unknown, the goal of this task it not estimating them. Such variables are ususally referred to as \emph{nuisance variables}.
+The largest non-zero frequency $\tB$ is called the bandlimit of the signal.
+We aim to recover the signal $x$ from $y$. The rotations are referred to as \emph{nuisance variables}---while they are unknown,the goal of the task is not estimating them.
 
-The classical sampling theory for a single measurement---the Shannon-Nyquist sampling theorem--- states that the sampling rate of the signal should be at least twice its bandwidth~\cite{shannon1949communication} (for a recent comprehensive survey of modern sampling theory; see~\cite{eldar2015sampling}).
-That is, the number of samples $L$ should be, at least, $2\tB$. 
-In this work, we are interested in  the \emph{high-noise, few samples regime}  in which $\sigma$ is large, and  we recorded  fewer than $2\tB$ samples. In particular, we study the interplay between four parameters: the bandwidth $\tB$, number of samples $L$, noise level $\sigma$, and number of measurements $N$. We denote the ratio $K=\tB/L$ as the \emph{super-resolution factor}.
-
+The classical sampling theory for a single measurement---the Shannon-Nyquist sampling theorem--- states that number of samples $L$ should be, at least, $2\tB+1$~\cite{shannon1949communication}. (For a recent comprehensive survey of modern sampling theory; see~\cite{eldar2015sampling}.)
+In this work, we are interested in  the \emph{high-noise, few samples regime}  in which $\sigma$ is large  and $L\leq 2\tB$. In particular, we study the interplay between four parameters: the bandlimit $\tB$, the number of samples $L$, the noise level $\sigma$, and the number of measurements $N$. %We denote the ratio $K=\tB/L$ as the \emph{super-resolution factor}.
+Informally, the main theoretical result of this paper states the following:
 \begin{thm}[informal]
-	Suppose that $N\to\infty$ measurements from the model~\eqref{eq:model} are recorded in the high noise regime. If $N$ scales like $\sigma^6$, then one can accurately estimate up to $B\approx L^2/6$ frequencies. That is, one can identify (order of) $L^2$ from $L$ samples per measurement. 
+Suppose that $N\to\infty$ measurements from the model~\eqref{eq:model} are collected in the high noise regime and each measurement is sampled at $L$ equally-spaced positions. 
+Then, if $N$ scales at least like $\sigma^6$, one can identify up to $B\approx L^2/6$ frequencies. %That is, one can identify (order of) $L^2$ from $L$ samples per measurement. 
 \end{thm}
 
-The problem of estimating a signal from low-resolution measurements (e.g., a few samples) is usually referred to as \emph{super-resolution from multiple measurements}. This problem attracted a lot of attention in the last couple of decades in a variety of fields, such as computer vision, image processing and medical imaging~\cite{park2003super,farsiu2004advances, greenspan2008super}.
-Since given the rotations the problem is linear, many papers have focused on the problem of estimating the set of $\theta_i$. However, in the high noise regime---which is the focal point of this work---the rotations cannot be estimated by any method~\cite{bendory2018toward,aguerrebere2016fundamental}. 
+The problem of estimating a high-resolution signal from low-resolution measurements (e.g., a few samples) is usually referred to as \emph{super-resolution from multiple measurements}. This problem attracted the attention of numerous researchers  in the last couple of decades in a variety of fields, such as computer vision, image processing and medical imaging~\cite{park2003super,farsiu2004advances, greenspan2008super}.
+Since given the rotations the problem is linear, many papers have focused on the problem of estimating the set of $\theta_i$. However, in the high noise regime---which is the focal point of this work---the rotations cannot be estimated reliably by any method~\cite{bendory2018toward,aguerrebere2016fundamental}. 
 We mention by passing that many works in recent years studied super-resolution from a single image based on prior knowledge (such as sparsity~\cite{huang2009super,candes2014towards} and recurrence of patches within the same image~\cite{glasner2009super}),
-and learning~\cite{lim2017enhanced}; just to mention a few works out of a huge collection in the literature. 
+and learning~\cite{lim2017enhanced}; just to mention few works out of a huge literature on the subject. 
 
-The model~\eqref{eq:model} is a special case of the \emph{multi-reference alignment} (MRA) problem. This problem involves estimating a signal from multiple noisy measurements; in each measurement the signal is acted upon by an unknown element of a known group $G$. 
-Thus, in its most general form, the measurement model can be written as 
+The model~\eqref{eq:model} is a special case of the \emph{multi-reference alignment} (MRA) problem. This problem involves estimating a signal (which lies in a known vector space) from multiple noisy measurements; in each measurement the signal is acted upon by an unknown element of a known group $G$. 
+In its most general form, the measurement model can be written as 
 \begin{equation}
 y = T(g\circ x) +\varepsilon, \qquad g\in G,
 \end{equation}
 where $T$ is a known linear operator. 
-In our model~\eqref{eq:model}, the signal lies in the space of B-bandlimited signals, $G$ is the group of two-dimensional rotations $SO(2)$, and the linear operator is the point-wise sampling.
-Similarly to many of the papers on MRA, our work is inspired by single particle problems using cryo-electron microscopy (cryo-EM) and x-ray free electron lasers (XFEL)---high-resolution structural methods for biological macromolecules  ~\cite{frank2006three,kuhlbrandt2014resolution,singer2018mathematics}. 
-In particular, this work is a first step towards understanding the resolution limits in this modality. In Section~\ref{sec:future_work} we make this connection explicit.
+In our model~\eqref{eq:model}, the signal lies in the space of B-bandlimited signals, $G$ is the group of two-dimensional rotations $SO(2)$, and the linear operator is the point-wise sampling $P$.
+Similarly to many MRA models in the literature,  our work is also inspired by single particle reconstruction problems using cryo-electron microscopy (cryo-EM) and x-ray free electron lasers (XFEL)---high-resolution structural methods for biological macromolecules~\cite{frank2006three,kuhlbrandt2014resolution,singer2018mathematics}. 
+In particular, this work is a first step towards understanding the resolution limits in these modalities. In Section~\ref{sec:future_work} we make this connection explicit.
 
 In the low noise regime, one can try to estimate the unknown group elements (that is, rotations) using one of many synchronization methods~\cite{singer2011angular,bandeira2015non,boumal2016nonconvex,chen2018projected,singer2011three}.
-Once those elements are known, estimating $x$ is a linear problem. 
-On the high noise regime, which is the focus of this work, estimating the unknown rotations is impossible~\cite{bendory2018toward,aguerrebere2016fundamental}.
-In this work we propose two methods to circumvent this limit. 
-The first approach relies on features of the measurements which are invariant 
+Once those elements are known, estimating $x$ is a linear, and relatively easy, problem. 
+As aforementioned, one cannot estimate the missing rotations of~\eqref{eq:model}---by any method---in the high noise regime~\cite{bendory2018toward,aguerrebere2016fundamental}.
+To circumvent this impossibility result, we study two methods.
+The first approach relies on which are invariant 
 under rotations. In the limit of $N,\sigma\to\infty$, it was shown that this strategy achieves the optimal  estimation rate---that is, no other method can obtain accurate estimation of the signal with fewer measurements~\cite{bandeira2017optimal,bandeira2017estimation,abbe2018multireference,abbe2018estimation}. Based on this approach, different algorithmic methods were proposed under different MRA setups~\cite{bendory2017bispectrum,perry2017sample,abbe2018multireference,boumal2018heterogeneous,chen2018spectral,ma2018heterogeneous,bandeira2014multireference}, as well as for  cryo-EM and XFEL~\cite{kam1980reconstruction,liu2013three,kurta2017correlations,levin20173d,bendory2018toward,pande2018ab,von2018structure}. 
 
-From reasons that are explained later on, we employ the invariant approach only for the theoretical analysis, carried out in Sections~\ref{sec:background} and~\ref{sec:theory}. As a computational framework, we devise an expectation-maximization (EM) algorithm, which marginalizes over the rotations rather than estimating then explicitly.  The EM algorithm is explained in detail in Section~\ref{sec:EM}, followed by numerical experiments.  
+From reasons that are explained later on, we employ the invariant approach only for the theoretical analysis, carried out in Sections~\ref{sec:background} and~\ref{sec:theory}. As a computational framework, we devise an expectation-maximization (EM) algorithm, which marginalizes over the rotations rather than estimating them explicitly.  The EM algorithm is explained in detail in Section~\ref{sec:EM}.
+Numerical experiments show that this EM algorithm enables to resolve frequencies well beyond the Nyquist rate.
 
 \section{Background} \label{sec:background}
+
+Our theoretical analysis is based on considering the invariant features of a discrete model. In this section we first elaborate on the invariant approach. Then, we describe the discrete model and show that our theoretical results on this model apply directly to~\eqref{eq:model}.
 
 \subsection{Rotationally invariant features} \label{sec:invariants}
 
@@ -104,15 +107,14 @@ M_q(z)[\ell_1,\ldots,\ell_{q-1}]=\int_{0}^1 z(t)z(t+\ell_1)\ldots z(t+\ell_{q-1}
 It is readily seen that this quantity remains unchanged under any rotation. 
 
 The invariants  can be also understood in the Fourier domain.
-Let ${\hat{z}[k]}$ be the $k$th Fourier coefficient of $z$ 
-and recall that rotating the signal by an angle $\alpha$ in the space domain is equivalent to multiply ${\hat{z}[k]}$ by $e^{\I k\alpha}$. Hence, the monomials
+Let ${\hat{z}[k]}$ be the $k$th Fourier coefficient of $z$. Recall that rotating the signal by an angle $\alpha$ in the space domain is equivalent to multiply ${\hat{z}[k]}$ by $e^{\I k\alpha}$. Hence, the monomials
 \begin{equation}
 \hat{M}_q(z)[k_1,\ldots,k_{q-1}]=\hat{z}[k_1],\ldots \hat{z}[k_{q-1}]{\hat{z}[-k_1-\cdots-k_{q-1}]},
 \end{equation} 
-remain unchanged under rotation.
+are also invariant under rotation.
 
-In this work, we make use of the first three invariants. The first invariant is the zero frequency $\hat{M}_1(z) = \hat{z}[0]$ (equivalently, in the space domain, the mean of the signal). The second invariant is the power spectrum of the signal $\hat{M}_2(z)[k]=|z[k]|^2$. Unfortunately, the mean and the power spectrum do not determine a signal uniquely. 
-Thus, we make use of the third invariant, the bispectrum, which determines almost all signals uniquely~\cite{tukey1953spectral,sadler1992shift}. Explicitly, it is given by
+In this work, we make use of the first three invariants. The first invariant is the zero frequency $\hat{M}_1(z) = \hat{z}[0]$ (equivalently, the mean of the signal). The second invariant is the power spectrum of the signal $\hat{M}_2(z)[k]=|z[k]|^2$. Unfortunately, the mean and the power spectrum do not determine a signal uniquely. 
+Thus, we make use of the third invariant, the \emph{bispectrum}, which determines almost all signals uniquely~\cite{tukey1953spectral,sadler1992shift}. Explicitly, it is given by
 \begin{equation}
 \hat{M}_3(z)[k_1,k_2] = z[k_1]z[k_2]z[-k_1-k_2].
 \end{equation}
@@ -121,10 +123,6 @@ Thus, we make use of the third invariant, the bispectrum, which determines almos
 The bispectrum is a key ingredient in many data processing applications, such as separating Gaussian and non-Gaussian processes~\cite{brockett1988bispectral}, studying the cosmic background
 radiation, seismic, radar and EEG signals~\cite{wang2000cosmic,chen2008feature,ning1989bispectral}, MIMO systems~\cite{chen2001frequency}, and classification~\cite{zhao2014rotationally}.  
 In Section~\ref{sec:future_work} we discuss the ramifications of employing higher-order invariants.  
-
-\TODO{The invariants can be easily estimated from the data + bias}
-
-%We should discuss mention that our result say that you can sub-sample the third-order autocorrelation by a large factor and still identify the signal. This is somehow related to the sub-Nyquist literature. 
 
 \subsection{The discrete model} \label{sec:discrete_analysis}
 
@@ -149,7 +147,7 @@ by the law of large numbers
 =\E M_q(y)[\ell_1,\ldots,\ell_{q-1}], 
 \end{equation}
 almost surely. 
-Thus, to simplify notation, we take expectation over the invariants in the lemma. In addition, in expectation, the effect of the noise reduces to known bias terms that can be removed easily (see for instance~\cite{bendory2017bispectrum}). Hence, for the sake of clarity, the lemma ignores them.
+Thus, to simplify notation, we take expectation over the invariants in the lemma. In addition, in expectation, the effect of the noise reduces to known bias terms that can be removed easily (see for instance~\cite{bendory2017bispectrum}). \TODO{to discuss the bias explicitly} Hence, for the sake of clarity, the lemma ignores them.
 The proof of the lemma is technical and we leave it to Appendix~\ref{sec:proof_lem:discrete_continuous}.
 \begin{lemma} \label{lem:discrete_continuous}
 Let $y$ and $y^d$ denote the observations in~\eqref{eq:model} and~\eqref{eq:discrete_model}, respectively, in the absence of noise. 
@@ -300,6 +298,12 @@ Then, For $K\leq 15$ and for $\mathcal{P}(L)L>B$ (given in~\eqref{eq:Pl}), one c
 If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true also for any $K$.
 \end{thm}
 
+\TODO{Here we should explain an important consequence: one can sub-sample the autocorrelation}
+
+
+%We should discuss mention that our result say that you can sub-sample the third-order autocorrelation by a large factor and still identify the signal. This is somehow related to the sub-Nyquist literature. 
+
+
 \section{An expectation-maximization algorithm }
 \label{sec:EM}
 
@@ -345,6 +349,11 @@ All expressions in this section were formulated for general linear operator $T$.
 
 \section{Numerical results}
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=1]{XP2}
+	\caption{\label{fig:XP2} caption}	
+\end{figure}
 
 
 \begin{figure}[h]
