@@ -58,8 +58,8 @@ so that
 \begin{eqnarray} \label{eq:fourier_expansion}
 y_i[\ell] = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b\left(\frac{\ell}{L}+\theta_i\right) }+ \varepsilon_i[\ell].
 \end{eqnarray}
-The largest non-zero frequency $\tB$ is called the bandlimit of the signal.
-We aim to recover the signal $x$ from $y$. The rotations are referred to as \emph{nuisance variables}---while they are unknown,the goal of the task is not estimating them.
+The largest non-zero frequency $\tB$ is called the bandlimit of the signal, and we denote $K:=B/L$.
+We aim to recover the signal $x$ from $y$, up to global rotation. The rotations are referred to as \emph{nuisance variables}---while they are unknown,the goal of the task is not estimating them.
 
 The classical sampling theory for a single measurement---the Shannon-Nyquist sampling theorem--- states that number of samples $L$ should be, at least, $2\tB+1$~\cite{shannon1949communication}. (For a recent comprehensive survey of modern sampling theory; see~\cite{eldar2015sampling}.)
 In this work, we are interested in  the \emph{high-noise, few samples regime}  in which $\sigma$ is large  and $L\leq 2\tB$. In particular, we study the interplay between four parameters: the bandlimit $\tB$, the number of samples $L$, the noise level $\sigma$, and the number of measurements $N$. %We denote the ratio $K=\tB/L$ as the \emph{super-resolution factor}.
@@ -126,73 +126,78 @@ In Section~\ref{sec:future_work} we discuss the ramifications of employing highe
 
 \subsection{The discrete model} \label{sec:discrete_analysis}
 
-In this section, we describe a discrete model and then show that all results derived for this model hold immediately for~\eqref{eq:model}.
+In this section, we describe a discrete model. Then, we show that
+any result on the discrete model based on autocorrelations hold true for~\eqref{eq:model}. To make the distinction clear, we refer here to~\eqref{eq:model} as the continuous model.
 
 Let us denote by $\T_T\subset S^1$ the T-points equally-spaced grid 
  \begin{equation} \label{eq:grid}
  \mathcal{T}_T:=\left\{0,\ldots,\frac{T-1}{T}\right\}.
  \end{equation}
- In the discrete model, we study the case where $\theta$ is rotated on the grid $\T_B$ and then sampled on $\T_{B/K}=\T_{L}$.
- Under this model, the samples of the $i$th measurement can be  written as
+ In the discrete model, we study the case where we restrict $\theta$ to rotated only on the grid $\T_B$ (rather than continuously on $S^1$) and then sample on $\T_{B/K}=\T_{L}$.
+ Under this model, the samples of the $i$th measurement are given by
  \begin{equation} \label{eq:discrete_model}
  y_i^d[\ell] = x\left(\frac{\ell K+\tau_i}{B}\right) + \varepsilon_i[\ell]=x\left(\frac{\ell}{L} + \frac{\tau_i}{B}\right)+\varepsilon_i[\ell], \quad \ell=0,\ldots L-1,
  \end{equation}
  for some random $\tau_i\in\{0,\ldots B-1\}$. The super script $y^d$ indicates that the measurements are taken from the discrete model. 
 
-The following lemma reveals the connection between the autocorrelations in the discrete and the continuous models. 
-Recall that 
+Note that the grid $\T_B$ samples $x$ below its Nyquist rate and thus induces aliasing in the Fourier domain.
+The following lemma reveals the effect of this aliasing and formulates the connection between the autocorrelations in the discrete and the continuous models~\eqref{eq:model}. 
+Before we present the lemma,  recall that 
 by the law of large numbers 
 \begin{equation}
 \lim_{N\to\infty}\frac{1}{N}\sum_{i=1}^NM_q(y_i)[\ell_1,\ldots,\ell_{q-1}]
 =\E M_q(y)[\ell_1,\ldots,\ell_{q-1}], 
 \end{equation}
 almost surely. 
-Thus, to simplify notation, we take expectation over the invariants in the lemma. In addition, in expectation, the effect of the noise reduces to known bias terms that can be removed easily (see for instance~\cite{bendory2017bispectrum}). \TODO{to discuss the bias explicitly} Hence, for the sake of clarity, the lemma ignores them.
+Thus, to simplify notation, we take expectation over the invariants in the lemma. 
 The proof of the lemma is technical and we leave it to Appendix~\ref{sec:proof_lem:discrete_continuous}.
 \begin{lemma} \label{lem:discrete_continuous}
-Let $y$ and $y^d$ denote the observations in~\eqref{eq:model} and~\eqref{eq:discrete_model}, respectively, in the absence of noise. 
+Let $y$ and $y^d$ denote the observations in~\eqref{eq:model} and~\eqref{eq:discrete_model}, respectively.
 Then, 
 \begin{align}
 \E M_1(y) = \E M_1(y^d) &= \hat{x}[0],
 \end{align}
 and
 \begin{align} \label{eq:power_spectrum_discrete}
-\E M_2(y)[n] = \E M_2(y^d)[n] &= \sum_{b=-\tB}^{\tB}\vert \hat{x}[b]\vert ^2e^{2\pi\I bn/L}.
+\E M_2(y)[n] = \E M_2(y^d)[n] &= \sum_{b=-\tB}^{\tB}\vert \hat{x}[b]\vert ^2e^{2\pi\I bn/L} + \sigma^2\delta[n].
 \end{align}
 The third-order autocorrelation of the  discrete model is given by 
 \begin{align} \label{eq:bispectrum_periodic}
-\E M_3^d[n_1,n_2] &= \sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)\bmod B]e^{-2\pi\I (b_1n_1 + b_2n_2)/L}.
+\E M_3^d[n_1,n_2] &= \sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)\bmod B]e^{-2\pi\I (b_1n_1 + b_2n_2)/L} + B_3[n_1,n2],
 \end{align}
+where $B_3[n_1,n2] = \sigma^2\hat{x}[0](\delta[n_1,0]+\delta[0,n_2] + \delta[n_1,n_2])$.
 The third-order autocorrelation of the continuous model takes on the form 
 \begin{align} \label{eq:bispectrum_aperiodic}
-\E M_3^d[n_1,n_2] &= \sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)]e^{-2\pi\I (b_1n_1 + b_2n_2)/L}.
+\E M_3^d[n_1,n_2] &= \sum_{b_1=-\tB}^{\tB}\sum_{b_2=-\tB}^{\tB}\hat{x}[b_1]\hat{x}[b_2]\hat{x}[(-b_1-b_2)]e^{-2\pi\I (b_1n_1 + b_2n_2)/L}+B_3[n_1,n2].
 \end{align}
 \end{lemma}
 
-Lemma~\ref{lem:discrete_continuous} shows that the first two autocorrelations of the discrete and continuous setups are identical, while the third differs when when $|b_1+b_2|\geq\tB$.
-For our purposes, this lemma suggests a simple way to reduce the model~\eqref{eq:model}. This can be done by extending each measurement periodically 
+Lemma~\ref{lem:discrete_continuous} shows that the first two autocorrelations of the discrete and continuous setups are identical, while the third differs in the regime $|b_1+b_2|\geq\tB$.
+It is therefore suggests a simple way to reduce~\eqref{eq:model} to the discrete setup. This can be done by extending each measurement periodically 
 \begin{eqnarray} \label{eq:fourier_expansion_period}
-\tilde{y}_i[\ell] = \sum_{b=-\infty}^{\infty}\hat{x}[b\bmod B]e^{2\pi\I b\left(\frac{\ell}{L}+\theta_i\right) }+ \varepsilon_i[\ell].
+\tilde{y}_i[\ell] = \sum_{b=-\infty}^{\infty}\hat{x}[b\bmod B]e^{2\pi\I b\left(\frac{\ell}{L}+\theta_i\right) }+ \tilde\varepsilon_i[\ell],
 \end{eqnarray}
-By comparing~\eqref{eq:bispectrum_aperiodic} and~\eqref{eq:bispectrum_periodic} it is clear that the third-order moment of~\ref{eq:fourier_expansion_period} equals to the third-order autocorrelation of the discrete case. Based on this reduction, we conclude the following:
+where $\tilde\varepsilon_i$ is the periodic extension of $\varepsilon_i$. \TODO{to recheck!}
+By comparing~\eqref{eq:bispectrum_aperiodic} and~\eqref{eq:bispectrum_periodic} it is clear that the third-order moment of~\eqref{eq:fourier_expansion_period} equals to the third-order autocorrelation of the discrete case. Based on this reduction, we conclude the following:
 
 \begin{cor} \label{cor:discrete_contonuous}
 	Every result for the discrete model~\eqref{eq:discrete_model} which is based solely on the first three autocorrelation, holds for~\eqref{eq:model} as well.
 \end{cor}
 
 
-The Fourier transforms of ~\eqref{eq:power_spectrum_discrete} and~\eqref{eq:bispectrum_periodic} are given by (for details, see Appendix~\ref{sec:proof_lem:discrete_continuous}:
+Corollary~\ref{cor:discrete_contonuous} implies that estimating from  periodic autocorrelations is at least as hard as estimating from the aperiodic counterparts.
+This phenomenon is not unique to our setup, and arises in a variety of setups.  
+For instance, it is well know that a generic two-dimensional signal can be determined uniquely from its aperiodic second-order autocorrelation but not from its periodic autocorrelation; see for example~\cite{hayes1982reconstruction}.\footnote{In practice, the mapping between the second-order aperiodic autocorrelation and a signal might be extremely sensitive~\cite{barnett2018geometry}.} The aperiodicity also plays a key role in uniqueness results other related fields, such as ultra-short pulse characterization~\cite{bendory2018signal}. 
+
+This work can be also understood in the context of sampling theorem based on autocorrelations: how many samples are required if one can compute the autocorrelations of the signal?
+ Indeed, the expressions~\eqref{eq:power_spectrum_discrete} and~\eqref{eq:bispectrum_periodic} represent sub-sampled versions of the full autocorrelations. In the Fourier domain, we get aliasing, that is, folding of the power spectrum and bispectrum onto themselves (for details, see Appendix~\ref{sec:proof_lem:discrete_continuous}):
 \begin{align}
 \E \hat{M}_2(y^d)[k] &=  L\sum_{p=0}^{K-1} \vert \hat{x}[(q+PL)\bmod L]\vert^2 \\
 \E \hat{M_3}(y^d)[k_1,k_2] &=  
  L^2\sum_{p_1=-(K-1)}^{K-1} \sum_{p_2=-(K-1)}^{K-1} \hat{x}[(k_1 + p_1L)] \hat{x}[(k_2 + p_2L)]\hat{x}[(-q_1-q_2 - (p_1+p_2)L)\bmod B]. \nonumber
 \end{align}
-This wrap-around in the spectrum is called aliasing and is the result of observing $y$ in only $B$ samples---half of the Nyquist rate. Considering a discrete setup which allow $\theta$ to rotate on a grid with at least $2B$ points would result in the same expressions as for the continuous setup.
+In the next section, we show that one can recover a signal uniquely from these aliased quantities. 
 
-Corollary~\ref{cor:discrete_contonuous} implies that estimating from the aperiodic bispectrum is easier than the periodic one.
-This phenomenon is not unique to our setup, and arises in a variety of setups.  
-For instance, it is well know that a generic two-dimensional signal can be determined uniquely from its aperiodic autocorrelation but not from its periodic autocorrelation; see for example~\cite{hayes1982reconstruction}.\footnote{In practice, the mapping between the aperiodic autocorrelation and a signal might be extremely sensitive~\cite{barnett2018geometry}.}. The aperiodicity also plays a key role in other related fields, such as ultra-short pulse characterization~\cite{bendory2018signal}. 
- 
 \section{Theory}
 \label{sec:theory}
 To analyze this model, we introduce notation
@@ -307,45 +312,57 @@ If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true a
 \section{An expectation-maximization algorithm }
 \label{sec:EM}
 
-Our theoretical study is based on the invariant features. Conceptually, it suggests a two stages procedure: it starts with estimation of the set $\mathcal{S}(x_1,\ldots,x_K)$, and then identify one unique signal according to some prior (e.g., smoothness, bandlimit).
-While efficient bispectrum demixing is possible in some regime~\cite{boumal2018heterogeneous,weinthesis}, this approach suffers from two drawbacks. First, it is not clear how to find a unique signal from $\mathcal{S}(x_1,\ldots,x_K)$ that agrees with the prior.  Second, any error in finding the appropriate set of rotations and permutation may result in a  completely different signal. Hence, such a procedure may be very sensitive to errors. 
-As an alternative, we propose using the expectation-maximization (EM) framework described below. 
+Our theoretical study is based on the invariant features. Conceptually, it suggests a two stages procedure: it starts with an estimation of the set of all possible rotations and permutations $\mathcal{S}(x_1,\ldots,x_K)$, and then identifying one unique signal according to some prior (e.g., smoothness, bandlimit).
+While efficient bispectrum demixing is possible~\cite{boumal2018heterogeneous,weinthesis}, this approach suffers from two drawbacks. First, it is not clear how to find a unique signal from $\mathcal{S}(x_1,\ldots,x_K)$ that agrees with the prior.  Second, any error in finding $\mathcal{S}(x_1,\ldots,x_K)$ may result in a  completely different signal. Hence, such a procedure may be very sensitive to errors. 
+As an alternative, we devise an expectation-maximization (EM) algorithm described below. 
 
-EM is a popular  framework to compute the marginalized maximum likelihood estimator (MMLE), proposed in~\cite{dempster1977maximum}. While it lacks rigorous theory, it works quite well in many cases. Hereafter, we assume here that $\theta$ is restricted to rotate on a discrete grid $\mathcal{T}$. For the sake of generality, we formulate the EM for a general linear operator $T$, not necessarily a sampling matrix.
-
-\TODO{To write here the explicit model with a general linear transformation}
-Given a set of $N$ measurements $y_1,\ldots,y_N$, the likelihood function  is proportional to $p(y_1,\ldots,y_N|x)p(x)$, where $p(x)$ is a prior on the signal. 
-In this work, we suppose that the signal is Gaussian with zero mean and known covariance $\Sigma$.
-Hence,  a simple calculation shows that the log-likelihood  then takes the form (up to a constant, cf.~\cite{bendory2017bispectrum,abbe2018multireference})
+EM is a popular  framework to compute the marginalized maximum likelihood estimator (MMLE)~\cite{dempster1977maximum}. While it lacks rigorous theory, it works quite well in many cases. 
+Hereafter, we formulate the EM for the general model
 \begin{equation}
-\log \mathcal{L}(y|x)  = -\frac{1}{2\sigma^2}\sum_{i=1}^{N}\|y_i - TR_{\theta_i}x\| - \frac{1}{2}x^T\Sigma^{-1}x.
+y = T R_\theta x + \varepsilon, 
 \end{equation}
-The algorithm aims to compute the MMLE by marginalizing over the the cyclic shifts, that is,  $\log \mathcal{L}(y|x)  = \sum_{\theta\in\mathcal{T}}\log \mathcal{L}(y|\theta,x)$. Computing the MMLE directly is intractable as one needs to evaluate the log likelihood at  an exponential number of combinations of rotations. The EM suggests to try to obtain the MMLE iteratively. 
+where $R_\theta$ is restricted to rotate on a discrete grid $\mathcal{T}$ and $T$  is a general linear operator (not necessarily a sampling matrix).
+
+Given a set of $N$ independent observations $y_1,\ldots,y_N$, the likelihood function  is proportional to $\mathcal{L}(y_1,\ldots,y_N|x) \propto	 p(y_1,\ldots,y_N|x)p(x)$, where  
+\begin{equation} \label{eq:likelihood}
+p(y_1,\ldots,y_N|x)\sim \prod_{i=1}^N\sum_{{\theta_\ell}\in\mathcal{T}}\mathcal{N}(T R_{\theta_{\ell_i}}x,\sigma^2),
+\end{equation}
+and $p(x)$ is a prior on the signal. 
+In this work, we suppose that the signal is drawn randomly from a Gaussian prior with zero mean and known covariance $\Sigma$ so that $p(x)\sim\mathcal{N}(0,\Sigma)$. 
+%The likelihood function can be also  written by marginalizing over the nuisance variables  $\mathcal{L}(y|x)  = \sum_{{\theta_\ell}\in\mathcal{T}} \mathcal{L}(y|\theta_\ell,x)$.
+%Hence,  a simple calculation shows that the log-likelihood  then takes the form (up to a constant, cf.~\cite{bendory2017bispectrum,abbe2018multireference})
+%\begin{equation}
+%\log \mathcal{L}(y|x)  = -\frac{1}{2\sigma^2}\sum_{i=1}^{N}\|y_i - TR_{\theta_i}x\| - \frac{1}{2}x^T\Sigma^{-1}x.
+%\end{equation}
+%The algorithm aims to compute the MMLE by marginalizing over the the cyclic shifts, that is,  $\log \mathcal{L}(y|x)  = \sum_{\theta\in\mathcal{T}}\log \mathcal{L}(y|\theta,x)$. 
+Computing the maximum of the likelihood function directly is intractable
+as one needs to evaluate the log likelihood at  an exponential number of combinations of rotations. The EM algorithm suggests a framework to  estimate the maximum of the likelihood iteratively. 
 
 Each EM iteration consists of two steps.
-The first, called the E-step, computes the expected value of the likelihood function  given the current estimate of the signal $x_t$ and the data $y_1,\ldots,y_N$
+The first, called the E-step, computes the expected value of the likelihood function with respect to the rotation given the current estimate of the signal $x_t$ and the data $y_1,\ldots,y_N$:
 \begin{equation}
 \begin{split}
 Q(x|x_t) &= \E_{\theta|y_1,\ldots,y_N,x_t}\left\{\ \log \mathcal{L}(y_1,\ldots,y_N,\theta|x_t).   \right\} \\
-& = -\frac{1}{2\sigma^2}\sum_{i=1}^{N}\sum_{\tau\in\mathcal{T}}w_{i,\tau}\|y_i - TR_{\tau}x\| - \frac{1}{2}x^T\Sigma^{-1}x,
+& = -\frac{1}{2\sigma^2}\sum_{i=1}^{N}\sum_{\theta_\ell\in\mathcal{T}}w_{i,\ell}\|y_i - TR_{\theta_\ell}x\| - \frac{1}{2}x^T\Sigma^{-1}x,
 \end{split}
 \end{equation} 
 where 
 \begin{equation} \label{eq:em_weights}
-w_{i,\tau} = P[\theta_i = \tau] = \frac{e^{\frac{-1}{2\sigma^2}\|y_i-TR_\tau x_t\|^2 }}{\sum_{\tau\in\mathcal{T}}e^{\frac{-1}{2\sigma^2}\|y_i-TR_\tau x_t\|^2 }}.
+w_{i,\ell} = P[\theta_i = \theta_\ell] = \frac{e^{\frac{-1}{2\sigma^2}\|y_i-TR_{\theta_\ell} x_t\|^2 }}{\sum_{{\theta_\ell}\in\mathcal{T}}e^{\frac{-1}{2\sigma^2}\|y_i-TR_{\theta_\ell} x_t\|^2 }}.
 \end{equation}
-Then,  the second step is to maximize $Q$ with respect to $x$. In that case, the solution is obtained by solving the linear system of equations
+Then,  the second step is to maximize $Q$ with respect to $x$. 
+The solution is obtained by solving the linear system of equations
 \begin{equation} \label{eq:em_linear_system}
 Ax = b,
 \end{equation}
 where 
 \begin{align}
-A :=&  \Sigma^{-1} + \frac{1}{\sigma^2}\sum_{i,\tau}\omega_{i,\tau} (R_\tau^{-1}T^TTR_\tau),\\ 
-b :=&   \frac{1}{\sigma^2} \sum_{i,\tau}\omega_{i,\tau}R_\tau^{-1}T^Ty_i.
+A :=&  \Sigma^{-1} + \frac{1}{\sigma^2}\sum_{i,\ell}\omega_{i,\ell} (R_{\theta_\ell}^{-1}T^TTR_{\theta_\ell}),\\ 
+b :=&   \frac{1}{\sigma^2} \sum_{i,\ell}\omega_{i,\ell}R_\tau^{-1}T^Ty_i.
 \end{align}
-The EM is then iterate between computing the weights~\eqref{eq:em_weights} and solving the linear system~\eqref{eq:em_linear_system}. 
+The EM is then iterate between computing the weights~\eqref{eq:em_weights} and solving the linear system~\eqref{eq:em_linear_system} until convergences. 
 
-All expressions in this section were formulated for general linear operator $T$. When the linear operator is the sampling operator, both steps can be implemented efficiently using FFT. In the following section we present numerical results based on the efficient implementation. 
+In the special case in which the linear operator is the sampling operator, the weights $\omega_{i,\ell}$, the matrix $A$ and $b$ can computed efficiently using FFT. A code for the efficient implementation and scripts for all experiments presented in the next section can be found in TKTK. To avoid local maxima, the code enables multiple initializations. Among the initialization, the one that achieve the maximal likelihood (the can be computed according to~\eqref{eq:likelihood}) is chosen. If the signal is assumed to have a strict bandlimit of $B$ frequencies, then the output of each EM iteration is projected onto its first $B$ frequencies.
 
 \section{Numerical results}
 
@@ -390,7 +407,11 @@ In the cryo-EM case, $g\in SO(3)$ and the Fourier transform of $x$ is assumed to
 
 \section{Proof of Lemma~\ref{lem:discrete_continuous}}  
 \label{sec:proof_lem:discrete_continuous}
-We start by computing the autocorrelations for the discrete model~\eqref{eq:discrete_model} and them proceed with~\eqref{eq:model}.
+
+In expectation the noise affects the autocorrelations only through bias terms with depends solely on $\sigma^2$. Specifically, these bias terms are equal to zero for the first autocorrelation, $\sigma^2\delta[n]$ for the second autocorrelation, and 
+$\sigma^2\hat{x}[0](\delta[n_1,0]+\delta[0,n_2]+\delta[n_1,n_2])$ for the third autocorrelation (see for instance~\cite{bendory2017bispectrum}). This is true for both discrete and continuous models. Hereafter, we continue the proof by neglecting the effects of the noise.
+
+We commence by computing the autocorrelations for the discrete model~\eqref{eq:discrete_model} and them proceed with the continuous model~\eqref{eq:model}.
 We start with the expected value of the mean:
 \begin{equation}
 \begin{split}
@@ -416,7 +437,7 @@ We can now proceed with the second moment:
 \end{split}
 \end{equation}
 where $\overline{z}$ denotes the conjugate of $z$.
-Taking the $L$-points DFT of $\E M_2(y^d)$ we get 
+Taking the $L$-points DFT of $\E M_2(y^d)$ results in
 \begin{equation}
 \begin{split}
 \E \hat{M}_2(y^d)[k] &= \sum_{n=0}^{L-1}\E M_2(y^d)[n]e^{-2\pi\I nk/L} = \sum_{b=-\tB}^{\tB}\vert \hat{x}[b]\vert^2\sum_{n=0}^{L-1}e^{-2\pi\I n(k-b)/L}.
@@ -425,7 +446,7 @@ Taking the $L$-points DFT of $\E M_2(y^d)$ we get
 The last term is not zero if and only if $b = k + pL$ for some $p\in\mathbb{Z}$.  Hence, we conclude that the observed power spectrum is a mix of power spectra:
 \begin{equation}
 \begin{split}
-\frac{1}{L}\E \hat{M}_2(y^d)[k] &=  \sum_{p=0}^{K-1} \vert \hat{x}[(q+PL)\bmod L]\vert^2.
+\frac{1}{L}\E \hat{M}_2(y^d)[k] &=  \sum_{-(K-1)}^{K-1} \vert \hat{x}[(q+PL)\bmod L]\vert^2.
 \end{split}
 \end{equation}
 
