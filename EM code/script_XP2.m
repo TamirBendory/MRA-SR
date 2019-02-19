@@ -11,7 +11,7 @@ if isempty(gcp('nocreate'))
 end
 
 % seeds the random number generator
-% seed = rng(55948);
+seed = rng(8679);
 
 L = 40; % signal length
 K = 4; % down-sampling factor 
@@ -22,72 +22,57 @@ Nyquist = L/K/2; % Nyquist sampling rate
 num_EM_trial = 5;
 
 % Number of measurements
-N = 1e4;
+N = 1e5;
 
 % Noise level
 snr = 1;
 
-%% Generating a signal with decaying power spectrum 
+%% Generating a signal with the desired power spectrum
 
-beta = 1; %decaying rate of the signal's power spectrum
-B = 12;  % strict bandwidth (only 2B-1 are non-zero)
+%decaying rate of the signal's power spectrum
+beta = 1; 
+% strict bandwidth (only 2B-1 are non-zero)
+B = 10;  
+
 [x_true, sigma_f, SIGMA] = generate_signal(beta, L);
-x_true = LP_proj(x_true, B); %projecting into B low frequncies
 
-% plotting the true power spectrum compared with the prior
-figure; hold on;
-plot(1:L, sigma_f);
-plot(1:L, abs(fft(x_true)).^2);
-plot([Nyquist Nyquist],[0 max(max(sigma_f),max(x_true))],'--')
-plot([B B],[0 max(sigma_f)],'--')
-legend('prior','true signal','Nyquist','bandlimit');
-title('power spectrum of the signal vs. prior');
-axis tight
-hold off;
+%projecting the signal into B low frequncies
+x_true = LP_proj(x_true, B);
 
 %% Generate the data
 
 noise_level = norm(x_true)/sqrt(snr*L); % snr = norm(x)^2/(L*sigma^2)
-save('parameters');
+save('parameters_XP2');
 data = generate_observations(x_true, N, noise_level, K);
-
 %% EM
 
 S = inv(SIGMA); % Note: S is the inverse of the covarince matrix
-niter = 1000; % maximal number of iteration for EM
-tolerance = 1e-5; % tolerance for stopping criterion 
+% maximal number of iteration for EM
+niter = 1000; 
+% tolerance for stopping criterion 
+tolerance = 1e-5; 
 
 % preparing variables for multiple initializations
-x_est = zeros(L, num_EM_trial); 
+x_est_XP2 = zeros(L, num_EM_trial); 
 MaxLL = zeros(num_EM_trial, 1);
-
-% plot the Log Likelihood progress
-flag_plot_LL = 1;
-
-if flag_plot_LL 
-figure; hold on;
-end
 
 EM_verbosity = 1;
 
 for iter_em = 1:num_EM_trial
+ 
+% initializing EM
 x_init = mvnrnd(zeros(L,1), SIGMA);
 x_init = x_init(:);
-[x_est(:,iter_em), LL, LL_dis] = SR_EM(data, noise_level, K, x_init, S, B, niter, tolerance, EM_verbosity);
-if flag_plot_LL 
-plot(LL);
-end
-MaxLL(iter_em) = LL(end); % maximum of the log-likelihood 
-end
+x_init = LP_proj(x_init, B);
 
-if flag_plot_LL 
-set(gca, 'XScale', 'log')
-set(gca, 'YScale', 'log')
-axis tight;
-title('Log-likelihood progress');
-ylabel('LL');
-xlabel('iter');
-hold off;
+[x_est_XP2(:,iter_em), LL, LL_dis] = SR_EM(data, noise_level, K, x_init, S, B, niter,...
+    tolerance, EM_verbosity);
+
+% maximal value of the log-likelihood function 
+MaxLL(iter_em) = LL(end); 
+
+save('x_est_XP2','x_est_XP2');
+
 end
 
 % choosing the "best" signal among all trials
@@ -96,13 +81,13 @@ end
 if num_EM_trial>1 
 % the variance across initializations provides insight about the difficulty
 % of the problem; low variance implies that all trials converged to a
-% similar solution
+% similar solution.
 var_em_iter = var(MaxLL);
 fprintf('Variance among EM trials = %.4g\n', var_em_iter);
 end
 
-x_est_best = x_est(:,ind);
-save('x_est_best','x_est_best');
+x_est_best = x_est_XP2(:,ind);
+save('x_est_best_XP2','x_est_best');
 
 %% Evaluate quality of recovery
 
@@ -129,4 +114,6 @@ plot(1:B, err_fft);
 plot([Nyquist Nyquist],[0 max(err_fft)],'--')
 title('Relative error as a function of frequency')
 axis tight
-hold off;
+fontsz = 11;
+filename = 'XP2.pdf';
+pdf_print_code(gcf, filename, fontsz)

@@ -6,3 +6,17 @@ manuscript/SR-MRA.aux
 manuscript/SR-MRA.log
 EM code/x_est_best.mat
 EM code/parameters.mat
+EM code/parameters_XP2.mat
+EM code/err_x_XP3.mat
+EM code/err_x_XP1.mat
+EM code/x_est_best_XP4.mat
+EM code/x_est_best_XP2.mat
+EM code/x_est_XP4.mat
+EM code/x_est_XP2.mat
+EM code/script_example.pdf
+literature/Super-Resolution_Image_Reconstruction_A.pdf
+literature/Nasrollahi-Moeslund2014_Article_Super-resolutionAComprehensive.pdf
+EM code/XP4.pdf
+EM code/XP2.pdf
+EM code/XP1.pdf
+EM code/XP1.fig
