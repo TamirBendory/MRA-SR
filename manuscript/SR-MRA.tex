@@ -76,7 +76,7 @@ and learning~\cite{lim2017enhanced}; just to mention few works out of a huge lit
 
 The model~\eqref{eq:model} is a special case of the \emph{multi-reference alignment} (MRA) problem. This problem involves estimating a signal (which lies in a known vector space) from multiple noisy measurements; in each measurement the signal is acted upon by an unknown element of a known group $G$. 
 In its most general form, the measurement model can be written as 
-\begin{equation}
+\begin{equation} \label{eq:mra}
 y = T(g\circ x) +\varepsilon, \qquad g\in G,
 \end{equation}
 where $T$ is a known linear operator. 
@@ -111,7 +111,7 @@ Let ${\hat{z}[k]}$ be the $k$th Fourier coefficient of $z$. Recall that rotating
 \begin{equation}
 \hat{M}_q(z)[k_1,\ldots,k_{q-1}]=\hat{z}[k_1],\ldots \hat{z}[k_{q-1}]{\hat{z}[-k_1-\cdots-k_{q-1}]},
 \end{equation} 
-are also invariant under rotation.
+are also invariant under rotation. If $z$ is a discrete signal, then integration is replaced by a sum.
 
 In this work, we make use of the first three invariants. The first invariant is the zero frequency $\hat{M}_1(z) = \hat{z}[0]$ (equivalently, the mean of the signal). The second invariant is the power spectrum of the signal $\hat{M}_2(z)[k]=|z[k]|^2$. Unfortunately, the mean and the power spectrum do not determine a signal uniquely. 
 Thus, we make use of the third invariant, the \emph{bispectrum}, which determines almost all signals uniquely~\cite{tukey1953spectral,sadler1992shift}. Explicitly, it is given by
@@ -123,6 +123,10 @@ Thus, we make use of the third invariant, the \emph{bispectrum}, which determine
 The bispectrum is a key ingredient in many data processing applications, such as separating Gaussian and non-Gaussian processes~\cite{brockett1988bispectral}, studying the cosmic background
 radiation, seismic, radar and EEG signals~\cite{wang2000cosmic,chen2008feature,ning1989bispectral}, MIMO systems~\cite{chen2001frequency}, and classification~\cite{zhao2014rotationally}.  
 In Section~\ref{sec:future_work} we discuss the ramifications of employing higher-order invariants.  
+
+One remarkable drawback of using high-order autocorrelations (or invariants) is their noise-amplification property. Computing the $q$th  autocorrelation involves the product $q$ noisy terms and thus the variance of the autocorrelation of a single measurement is proportional to $\sigma^{2q}$ in the high noise regime. Therefore, in this regime, the the number of measurements should scale like $\sigma^{2q}$ to retain a constant estimation error. While it seems to be a large number of measurements, it was shown that for the multi-reference alignment model~\eqref{eq:mra} the invariant approach (or, more generally, the method of moments) is optimal in the following sense. Let $\bar{q}$ be the lowest-order autocorrelation that distinguish two signals (up to symmetries). Then, in the $N,\sigma\to\infty$ regime, the error of any method is bounded away from zero if  $N/\sigma^{2\bar{q}}$ is bounded from above~\cite{bandeira2017optimal,abbe2018estimation}. 
+In our setup~\eqref{eq:model}, since the power spectrum does not determine the signal (even without the sampling operator), the optimal number of of required measurements scales as $\sigma^6$. In Section~\ref{sec:future_work} we discuss the potential of super-resolution if more measurements are available.
+
 
 \subsection{The discrete model} \label{sec:discrete_analysis}
 
@@ -192,9 +196,9 @@ For instance, it is well know that a generic two-dimensional signal can be deter
 This work can be also understood in the context of sampling theorem based on autocorrelations: how many samples are required if one can compute the autocorrelations of the signal?
  Indeed, the expressions~\eqref{eq:power_spectrum_discrete} and~\eqref{eq:bispectrum_periodic} represent sub-sampled versions of the full autocorrelations. In the Fourier domain, we get aliasing, that is, folding of the power spectrum and bispectrum onto themselves (for details, see Appendix~\ref{sec:proof_lem:discrete_continuous}):
 \begin{align}
-\E \hat{M}_2(y^d)[k] &=  L\sum_{p=0}^{K-1} \vert \hat{x}[(q+PL)\bmod L]\vert^2 \\
+\frac{1}{L}\E \hat{M}_2(y^d)[k] &=  \sum_{p=0}^{K-1} \vert \hat{x}[(q+PL)\bmod L]\vert^2 \\
 \E \hat{M_3}(y^d)[k_1,k_2] &=  
- L^2\sum_{p_1=-(K-1)}^{K-1} \sum_{p_2=-(K-1)}^{K-1} \hat{x}[(k_1 + p_1L)] \hat{x}[(k_2 + p_2L)]\hat{x}[(-q_1-q_2 - (p_1+p_2)L)\bmod B]. \nonumber
+ \sum_{p_1,p_2=-(K-1)}^{K-1} \hat{x}[(k_1 + p_1L)] \hat{x}[(k_2 + p_2L)]\hat{x}[(-q_1-q_2 - (p_1+p_2)L)\bmod B]. \nonumber
 \end{align}
 In the next section, we show that one can recover a signal uniquely from these aliased quantities. 
 
@@ -226,7 +230,7 @@ Given $\sigma^2$, one can remove the bias factors easily.
 The identifiability of a set of $K$ signals from the mix of their  invariants~\eqref{eq:mix_invariants} was studied~\cite{bandeira2017estimation}.
 Clearly, one can hope to identify the signals only up  to permutation (between the $K$ signals) and cyclic shifts (of each signal separately). 
 Hence, at best, one can identify the set of signals  
-\begin{equation}
+\begin{equation} \label{eq:setS}
 \mathcal{S}(x_1,\ldots,x_K):=\left\{ \theta_0,\ldots,\theta_{K-1},\pi : R_{\theta_0}x_{\pi(0)}, \ldots,R_{\theta_{K-1}}x_{\pi(K-1)},
 \right\}
 \end{equation}
@@ -312,23 +316,24 @@ If Conjecture 5.4 in~\cite{bandeira2017estimation} is valid, the it holds true a
 \section{An expectation-maximization algorithm }
 \label{sec:EM}
 
-Our theoretical study is based on the invariant features. Conceptually, it suggests a two stages procedure: it starts with an estimation of the set of all possible rotations and permutations $\mathcal{S}(x_1,\ldots,x_K)$, and then identifying one unique signal according to some prior (e.g., smoothness, bandlimit).
-While efficient bispectrum demixing is possible~\cite{boumal2018heterogeneous,weinthesis}, this approach suffers from two drawbacks. First, it is not clear how to find a unique signal from $\mathcal{S}(x_1,\ldots,x_K)$ that agrees with the prior.  Second, any error in finding $\mathcal{S}(x_1,\ldots,x_K)$ may result in a  completely different signal. Hence, such a procedure may be very sensitive to errors. 
-As an alternative, we devise an expectation-maximization (EM) algorithm described below. 
+Our theoretical study is based on invariant features of order three. Conceptually, it suggests a two stages procedure: it starts with an estimating the set of all possible rotations and permutations $\mathcal{S}(x_1,\ldots,x_K)$~\eqref{eq:setS}, and then identifying one unique signal according to some prior (e.g., smoothness, bandlimit).
+While efficient bispectrum demixing is possible~\cite{boumal2018heterogeneous,weinthesis}, it is not clear how to devise a tractable algorithm that finds a unique signal out from $\mathcal{S}(x_1,\ldots,x_K)$ that agrees with the prior.  %Second, any error in estimating the set $\mathcal{S}(x_1,\ldots,x_K)$ may lead to a . Hence, such a procedure may be very sensitive to errors. 
+As an alternative, we devise an expectation-maximization (EM) algorithm described below that treats the estimation problem as a whole.
 
-EM is a popular  framework to compute the marginalized maximum likelihood estimator (MMLE)~\cite{dempster1977maximum}. While it lacks rigorous theory, it works quite well in many cases. 
+EM is a popular  framework to compute the  maximum likelihood estimator (MLE)~\cite{dempster1977maximum}. While it lacks rigorous theory, it is known to work quite well in many cases. 
 Hereafter, we formulate the EM for the general model
 \begin{equation}
 y = T R_\theta x + \varepsilon, 
 \end{equation}
 where $R_\theta$ is restricted to rotate on a discrete grid $\mathcal{T}$ and $T$  is a general linear operator (not necessarily a sampling matrix).
+In the end of this section, we make few comments on the particularization to the specific case where $T$ is the sampling operator.
 
-Given a set of $N$ independent observations $y_1,\ldots,y_N$, the likelihood function  is proportional to $\mathcal{L}(y_1,\ldots,y_N|x) \propto	 p(y_1,\ldots,y_N|x)p(x)$, where  
+Given a set of $N$ independent observations $y_1,\ldots,y_N$, the likelihood function  is proportional to $\mathcal{L}(y_1,\ldots,y_N) \propto	 p(y_1,\ldots,y_N|x)p(x)$, where  
 \begin{equation} \label{eq:likelihood}
-p(y_1,\ldots,y_N|x)\sim \prod_{i=1}^N\sum_{{\theta_\ell}\in\mathcal{T}}\mathcal{N}(T R_{\theta_{\ell_i}}x,\sigma^2),
+p(y_1,\ldots,y_N|x)\sim \prod_{i=1}^N\frac{1}{|\mathcal{T}|}\sum_{{\theta_\ell}\in\mathcal{T}}\mathcal{N}(T R_{\theta_{\ell_i}}x,\sigma^2),
 \end{equation}
 and $p(x)$ is a prior on the signal. 
-In this work, we suppose that the signal is drawn randomly from a Gaussian prior with zero mean and known covariance $\Sigma$ so that $p(x)\sim\mathcal{N}(0,\Sigma)$. 
+We assume that the signal is drawn randomly from a Gaussian prior with zero mean and known covariance $\Sigma$ so that ${p(x)\sim\mathcal{N}(0,\Sigma)}$. 
 %The likelihood function can be also  written by marginalizing over the nuisance variables  $\mathcal{L}(y|x)  = \sum_{{\theta_\ell}\in\mathcal{T}} \mathcal{L}(y|\theta_\ell,x)$.
 %Hence,  a simple calculation shows that the log-likelihood  then takes the form (up to a constant, cf.~\cite{bendory2017bispectrum,abbe2018multireference})
 %\begin{equation}
@@ -336,13 +341,13 @@ In this work, we suppose that the signal is drawn randomly from a Gaussian prior
 %\end{equation}
 %The algorithm aims to compute the MMLE by marginalizing over the the cyclic shifts, that is,  $\log \mathcal{L}(y|x)  = \sum_{\theta\in\mathcal{T}}\log \mathcal{L}(y|\theta,x)$. 
 Computing the maximum of the likelihood function directly is intractable
-as one needs to evaluate the log likelihood at  an exponential number of combinations of rotations. The EM algorithm suggests a framework to  estimate the maximum of the likelihood iteratively. 
+as one needs to evaluate the likelihood for $L^N$ combinations of  rotations. The EM algorithm suggests a framework to  estimate the maximum of the likelihood iteratively. It can be shown that EM converges to local maximum of the likelihood function~\cite{dempster1977maximum}. 
 
 Each EM iteration consists of two steps.
-The first, called the E-step, computes the expected value of the likelihood function with respect to the rotation given the current estimate of the signal $x_t$ and the data $y_1,\ldots,y_N$:
+The first, called the E-step, computes the expected value of the likelihood function with respect to the rotation, given the current estimate of the signal $x_t$ and the data $y_1,\ldots,y_N$:
 \begin{equation}
 \begin{split}
-Q(x|x_t) &= \E_{\theta|y_1,\ldots,y_N,x_t}\left\{\ \log \mathcal{L}(y_1,\ldots,y_N,\theta|x_t).   \right\} \\
+Q(x|x_t) &= \E_{\theta|y_1,\ldots,y_N,x_t}\left\{\ \log \mathcal{L}(y_1,\ldots,y_N,\theta|x_t)  \right\} \\
 & = -\frac{1}{2\sigma^2}\sum_{i=1}^{N}\sum_{\theta_\ell\in\mathcal{T}}w_{i,\ell}\|y_i - TR_{\theta_\ell}x\| - \frac{1}{2}x^T\Sigma^{-1}x,
 \end{split}
 \end{equation} 
@@ -362,7 +367,8 @@ b :=&   \frac{1}{\sigma^2} \sum_{i,\ell}\omega_{i,\ell}R_\tau^{-1}T^Ty_i.
 \end{align}
 The EM is then iterate between computing the weights~\eqref{eq:em_weights} and solving the linear system~\eqref{eq:em_linear_system} until convergences. 
 
-In the special case in which the linear operator is the sampling operator, the weights $\omega_{i,\ell}$, the matrix $A$ and $b$ can computed efficiently using FFT. A code for the efficient implementation and scripts for all experiments presented in the next section can be found in TKTK. To avoid local maxima, the code enables multiple initializations. Among the initialization, the one that achieve the maximal likelihood (the can be computed according to~\eqref{eq:likelihood}) is chosen. If the signal is assumed to have a strict bandlimit of $B$ frequencies, then the output of each EM iteration is projected onto its first $B$ frequencies.
+In the special case in which the linear operator is the sampling operator~\eqref{eq:model}, computing the weights and constructing $A$ and $b$ reduces to computing a set of correlations that be executed  efficiently using FFT. 
+A code for the efficient implementation and scripts for all experiments presented in the next section can be found in TKTK. To avoid local maxima, the code enables multiple initializations. Among the initializations, we choose the estimation that achieve  maximal likelihood, that can be computed according to~\eqref{eq:likelihood}. If the signal is assumed to have a strict bandlimit of $B$ frequencies, then the output of each EM iteration is projected onto its first $B$ frequencies.
 
 \section{Numerical results}
 
