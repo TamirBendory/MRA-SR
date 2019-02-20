@@ -62,7 +62,9 @@ The largest non-zero frequency $\tB$ is called the bandlimit of the signal, and 
 We aim to recover the signal $x$ from $y$, up to global rotation. The rotations are referred to as \emph{nuisance variables}---while they are unknown,the goal of the task is not estimating them.
 
 The classical sampling theory for a single measurement---the Shannon-Nyquist sampling theorem--- states that number of samples $L$ should be, at least, $2\tB+1$~\cite{shannon1949communication}. (For a recent comprehensive survey of modern sampling theory; see~\cite{eldar2015sampling}.)
-In this work, we are interested in  the \emph{high-noise, few samples regime}  in which $\sigma$ is large  and $L\leq 2\tB$. In particular, we study the interplay between four parameters: the bandlimit $\tB$, the number of samples $L$, the noise level $\sigma$, and the number of measurements $N$. %We denote the ratio $K=\tB/L$ as the \emph{super-resolution factor}.
+In this work, we are interested in  the \emph{high-noise, few samples regime}  in which $\sigma$ is large  and $L\leq 2\tB$. 
+The difficulty is then resides in several factors: high noise, unknown rotations and low sampling rate.
+In particular, we study the interplay between four parameters: the bandlimit $\tB$, the number of samples $L$, the noise level $\sigma$, and the number of measurements $N$. %We denote the ratio $K=\tB/L$ as the \emph{super-resolution factor}.
 Informally, the main theoretical result of this paper states the following:
 \begin{thm}[informal]
 Suppose that $N\to\infty$ measurements from the model~\eqref{eq:model} are collected in the high noise regime and each measurement is sampled at $L$ equally-spaced positions. 
@@ -80,7 +82,7 @@ In its most general form, the measurement model can be written as
 y = T(g\circ x) +\varepsilon, \qquad g\in G,
 \end{equation}
 where $T$ is a known linear operator. 
-In our model~\eqref{eq:model}, the signal lies in the space of B-bandlimited signals, $G$ is the group of two-dimensional rotations $SO(2)$, and the linear operator is the point-wise sampling $P$.
+In our model~\eqref{eq:model}, the signal lies in the space of B-bandlimited signals, $G$ the rotation group $U(1)$ (isomorphic to the  two-dimensional rotation group $SO(2)$), and the linear operator is the point-wise sampling $P$.
 Similarly to many MRA models in the literature,  our work is also inspired by single particle reconstruction problems using cryo-electron microscopy (cryo-EM) and x-ray free electron lasers (XFEL)---high-resolution structural methods for biological macromolecules~\cite{frank2006three,kuhlbrandt2014resolution,singer2018mathematics}. 
 In particular, this work is a first step towards understanding the resolution limits in these modalities. In Section~\ref{sec:future_work} we make this connection explicit.
 
@@ -202,8 +204,9 @@ This work can be also understood in the context of sampling theorem based on aut
 \end{align}
 In the next section, we show that one can recover a signal uniquely from these aliased quantities. 
 
-\section{Theory}
+\section{Main results}
 \label{sec:theory}
+
 To analyze this model, we introduce notation
 \begin{equation} \label{eq:sub_signals}
 x_i[\ell] = x[K\ell + i], \quad \ell=0,\ldots,L-1.
@@ -241,7 +244,7 @@ In this work, it was shown that $K$ generic signals can be recovered from~\eqref
 \end{equation}
 For $K\geq 5$, it suffices to require $K\leq \frac{L+5}{6}$. 
 Since $\mathcal{P}(L) \approx L/6$, we conclude that the minimal number of samples scales as $\sqrt{6B}$. In other words, from $L$ samples, one can approximate  $B=O(L^2)$ frequencies. 
-This bound was proved only in the regime $L\leq 180$\footnote{The proof of the result is based on numerical examination of a special matrix that should be carry out for each set of parameters. In~\cite{bandeira2017estimation} the conjecture was verified for a limited regime of parameters. Thanks to the assistance of Dr. Joseph Kileel we were able to verify the conjecture for broader set of parameters.}, and therefore limiting our rigorous proof for the regime of small $L$. 
+This bound was proved only in the regime $L\leq 192$, and therefore limiting our rigorous proof for the regime of small $L$\footnote{The proof of the result is based on numerical examination of a special matrix that should be carry out for each set of parameters. In~\cite{bandeira2017estimation} the conjecture was verified for a limited regime of parameters. Thanks to the assistance of Dr. Joseph Kileel we were able to verify the conjecture for broader set of parameters.}. 
 However, it was conjectured  to hold true for any $L$~\cite[Conjecture 5.4]{bandeira2017estimation}.
 Therefore, we conclude the following result:
 \begin{prop} \label{prop1}
@@ -390,21 +393,17 @@ A code for the efficient implementation and scripts for all experiments presente
 \section{Discussion} \label{sec:future_work}
 
 
-cryo-EM is a motivation~\cite{chen2018single}
+In this work we studied the possibility for super-resolution from multiple signals in a noisy environment using the third-order autocorrelation.
+To use higher-order autocorrelations, more measurements should be collected: the number of measurements to scale (asymptotically) like $\sigma^{2q}$ to estimate the $q$th autocorrelation accurately.
+If that many measurements are available, the $q$th autocorrelation provides $O(L^{q-1})$ polynomial equations of the sought signals.
+Based on our analysis and the reduction of the super-resolution problem to the heterogeneous MRA model~\eqref{eq:heter_mra}, we expect that the $q\geq3$ autocorrelation would identify $O(L^{q-1})$ frequencies. 
+Such a  result will follow directly from the generalization of~\cite{bandeira2017estimation} to higher moments. 
 
+The main motivation of this work arises from cryo-EM and XFEL. 
+The measurements in these applications  (under simplifying assumption that are beyond the scope of this paper)
+agree with the general MRA model~\eqref{eq:model} where $g\in SO(3)$ (the group of 3-D rotations),  the 3-D signal $x$ is assumed to be bounded in a ball (``bandlimited'' volume), and the linear operator $T$ collects samples from the the tomographic projection of $g\cdot x$ from a fixed direction. The question then would be whether the obtainable resolution of a 3-D reconstruction algorithm can overtake the resolution dedicated by the sampling operator---that is, the resolution of the 2-D images. Recent evidences suggest that the answer is positive~\cite{chen2018single}. Extending our analysis to this case is highly non-trivial and we leave it for future research. 
+In addition, it would interesting to extend the model~\eqref{eq:model} to incorporate  different distributions of rotations (since the  distribution in cryo-EM is typically non-uniform) and other type of noise statistics (e.g., the  XFEL images are corrupted with Poisson noise).
 
-In this work we studied the possibility for super-resolution using the bispectrum. In general, one can use higher moments. However, computing higher moments amplifies the noise; asymptotically, one need the number of measurements to scale like $\sigma^{2d}$ to compute the $d$th moment. On the other hand, computing higher moments provides more equations. For instance, in the discrete model, we have shown that the key step in the analysis is the reduction of the problem to heterogeneous MRA model~\eqref{eq:heter_mra}.  By taking the $d$th moment we will get  $O(L^{d-1})$ equations, and therefore we expect to be able to recover $O(L^{d-2})$ (up to symmetries). According to this line of reasoning, we conjecture that the maximal frequency would scales like $L^{d-1}$. The price would be the amplification of the noise, that is, one would need to acquire many additional measurements.  
-
-The model considered in this paper can be naturally generalized to 
-\begin{equation} \label{eq:general_model}
-y = P (g\cdot x) + \varepsilon,\quad g\in G,
-\end{equation}
-where $g$ is a uniformly distributed random element of a compact group $G$ acting on $x$ by $(g\cdot x)(t) = x(g^{-1}t)$, where $x$ lies in some signal space, and $P$ is a linear operator.  In this manuscript we considered the group of cyclic shifts $\mathbb{Z}_L$ and 2-D rotations $SO(2)$, while $P$ was an equally-spaced sampling operator. The signal was assumed to lie in the space of bandlimited signals.  \TODO{Refs to papers on bispectrum for general groups}
-
-In the cryo-EM case, $g\in SO(3)$ and the Fourier transform of $x$ is assumed to be bounded in a ball (``bandlimited'' volume). The linear operator $P$ would be an equally-spaced sampling of the tomographic projection of $g\cdot x$ from a fixed direction. The question then would be whether it is possible to reconstruct the 3-D structure to resolution beyond the resolution dedicated by the sampling operator---beyond the resolution of the 2-D images. Recent evidences suggest it is possible~\cite{chen2018single}. In addition, since the distribution over $SO(3)$ is usually non-uniform, it would be interesting to study the effect of the distribution on the maximal resolution that can be obtained. Another generalization of the model would be to allow other type of noise statistics. This might be important to X-ray free electron laser (XFEL), in which the data is corrupted with Poisson noise.
- 
- \TODO{Relation to 2-D Kam's method?}
-	
 \bibliographystyle{plain}
 \bibliography{ref}
 
