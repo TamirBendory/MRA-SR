@@ -96,7 +96,7 @@ under rotations. In the limit of $N,\sigma\to\infty$, it was shown that this str
 From reasons that are explained later on, we employ the invariant approach only for the theoretical analysis, carried out in Sections~\ref{sec:background} and~\ref{sec:theory}. As a computational framework, we devise an expectation-maximization (EM) algorithm, which marginalizes over the rotations rather than estimating them explicitly.  The EM algorithm is explained in detail in Section~\ref{sec:EM}.
 Numerical experiments show that this EM algorithm enables to resolve frequencies well beyond the Nyquist rate.
 
-\section{Background} \label{sec:background}
+\section{Theory} \label{sec:theory}
 
 Our theoretical analysis is based on considering the invariant features of a discrete model. In this section we first elaborate on the invariant approach. Then, we describe the discrete model and show that our theoretical results on this model apply directly to~\eqref{eq:model}.
 
@@ -204,8 +204,8 @@ This work can be also understood in the context of sampling theorem based on aut
 \end{align}
 In the next section, we show that one can recover a signal uniquely from these aliased quantities. 
 
-\section{Main results}
-\label{sec:theory}
+\subsection{Main results}
+\label{sec:main_results}
 
 To analyze this model, we introduce notation
 \begin{equation} \label{eq:sub_signals}
@@ -397,11 +397,12 @@ In this work we studied the possibility for super-resolution from multiple signa
 To use higher-order autocorrelations, more measurements should be collected: the number of measurements to scale (asymptotically) like $\sigma^{2q}$ to estimate the $q$th autocorrelation accurately.
 If that many measurements are available, the $q$th autocorrelation provides $O(L^{q-1})$ polynomial equations of the sought signals.
 Based on our analysis and the reduction of the super-resolution problem to the heterogeneous MRA model~\eqref{eq:heter_mra}, we expect that the $q\geq3$ autocorrelation would identify $O(L^{q-1})$ frequencies. 
+If this is correct, then for $N\to\infty$ and any fixed noise level (that might be very high), there is no limit on the obtainable resolution.
 Such a  result will follow directly from the generalization of~\cite{bandeira2017estimation} to higher moments. 
 
 The main motivation of this work arises from cryo-EM and XFEL. 
 The measurements in these applications  (under simplifying assumption that are beyond the scope of this paper)
-agree with the general MRA model~\eqref{eq:model} where $g\in SO(3)$ (the group of 3-D rotations),  the 3-D signal $x$ is assumed to be bounded in a ball (``bandlimited'' volume), and the linear operator $T$ collects samples from the the tomographic projection of $g\cdot x$ from a fixed direction. The question then would be whether the obtainable resolution of a 3-D reconstruction algorithm can overtake the resolution dedicated by the sampling operator---that is, the resolution of the 2-D images. Recent evidences suggest that the answer is positive~\cite{chen2018single}. Extending our analysis to this case is highly non-trivial and we leave it for future research. 
+agree with the general MRA model~\eqref{eq:model} where $g\in SO(3)$ (the group of 3-D rotations),  the 3-D signal $x$ is assumed to be bounded in a ball (``bandlimited'' volume), and the linear operator $T$ collects samples from the the tomographic projection of $g\cdot x$ from a fixed direction. The question then would be whether the obtainable resolution of a 3-D reconstruction algorithm can overtake the resolution dedicated by the sampling operator---that is, the resolution of the 2-D images. Recently, a proof of concept on simulated data has been published~\cite{chen2018single}. Extending our analysis to this case is highly non-trivial and we leave it for future research. 
 In addition, it would interesting to extend the model~\eqref{eq:model} to incorporate  different distributions of rotations (since the  distribution in cryo-EM is typically non-uniform) and other type of noise statistics (e.g., the  XFEL images are corrupted with Poisson noise).
 
 \bibliographystyle{plain}
