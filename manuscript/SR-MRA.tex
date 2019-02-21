@@ -39,41 +39,49 @@
 
 \section{Introduction}
 
-We consider the problem of recovering a signal from multiple measurements, each is a noisy, rotated and sampled version of the signal. Let $x: S^1\rightarrow\R$ be a signal on the circle and  let $R_\theta$ denote a random rotation, that is, $(R_\theta x)(t)= x(t-\theta)$. 
-We assume that $\theta$ is distributed uniformly on the circle and we let $P$ be the sampling operator that collects $L$ equally-spaced samples of the rotated signal. Together with i.i.d.\ Gaussian noise $\varepsilon\in \R^L$,  the model reads
+We consider the problem of recovering a signal from multiple measurements of its noisy, rotated and sampled versions. Let $x: S^1\rightarrow\R$ be a signal on the circle, and let $P$ denotes a sampling operator that collects $L$ equally-spaced samples.
+Let $R_\theta$ denote a  rotation, that is, $(R_\theta x)(t)= x(t-\theta)$, where  $\theta$ is assumed to be distributed uniformly on the circle. Together with i.i.d.\ Gaussian noise $\varepsilon\in \R^L$,  the model reads
 \begin{align} \label{eq:model}
 y &= P(R_\theta x) + \varepsilon, \quad & \theta\sim \text{Uniform}[0,1),\quad \varepsilon\sim \mathcal{N}(0,\sigma^2 I_L),
 \end{align}
-where $I_L$ is the identity matrix of size $L\times L$. The  samples of the $i$th measurement are then given by
+where $I_L$ is the identity matrix of size $L\times L$. 
+Our goal is to recover $x$, up to rotation, from $N$ independent observations:
 \begin{equation} \label{eq:continuous_measurements}
-y_i[\ell] = \left(R_{\theta_i} x\right)[\ell] + \varepsilon_i[\ell] =  x[\ell/L-\theta_i] + \varepsilon_i[\ell], \quad \ell=0,\ldots,L-1.
+y_i[\ell] = \left(R_{\theta_i} x\right)[\ell] + \varepsilon_i[\ell] =  x[\ell/L-\theta_i] + \varepsilon_i[\ell], \quad \ell=0,\ldots,L-1, \quad i=1,\ldots,N.
 \end{equation}
+The rotations are referred to as \emph{nuisance variables}---while they are unknown, the goal of the task is not estimating them.
 
-Without any assumption on the structure of the signal, one cannot hope to accurately estimate it from finite number of samples. 
-A natural and ubiquitous assumption is that the signal is bandlimited, that is, it can  be expanded as 
+Without any structural assumption, one cannot hope to accurately estimate the signal from finite number of samples. 
+A natural and ubiquitous assumption is that the signal is bandlimited so that it can  be expanded as 
 \begin{eqnarray} \label{eq:fourier_expansion}
-x(t) = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I bt }, \quad t\in[0,1),
+x(t) = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I bt }, \quad t\in[0,1).
 \end{eqnarray}
-so that
+The largest non-zero frequency $\tB$ is called the bandlimit of the signal, and we denote the ratio between the bandlimit and the number of samples by $K:=B/L$. Under the bandlimitness assumption, each measurement takes on the form
 \begin{eqnarray} \label{eq:fourier_expansion}
 y_i[\ell] = \sum_{b=-\tB}^{\tB}\hat{x}[b]e^{2\pi\I b\left(\frac{\ell}{L}+\theta_i\right) }+ \varepsilon_i[\ell].
 \end{eqnarray}
-The largest non-zero frequency $\tB$ is called the bandlimit of the signal, and we denote $K:=B/L$.
-We aim to recover the signal $x$ from $y$, up to global rotation. The rotations are referred to as \emph{nuisance variables}---while they are unknown,the goal of the task is not estimating them.
 
+\begin{figure}
+	\centering
+	\includegraphics[scale=1.3]{fig_intro}
+	\caption{Example for three measurements from the model (need to provide parameters)}
+\end{figure}
 The classical sampling theory for a single measurement---the Shannon-Nyquist sampling theorem--- states that number of samples $L$ should be, at least, $2\tB+1$~\cite{shannon1949communication}. (For a recent comprehensive survey of modern sampling theory; see~\cite{eldar2015sampling}.)
 In this work, we are interested in  the \emph{high-noise, few samples regime}  in which $\sigma$ is large  and $L\leq 2\tB$. 
-The difficulty is then resides in several factors: high noise, unknown rotations and low sampling rate.
-In particular, we study the interplay between four parameters: the bandlimit $\tB$, the number of samples $L$, the noise level $\sigma$, and the number of measurements $N$. %We denote the ratio $K=\tB/L$ as the \emph{super-resolution factor}.
+The difficulty in this regime resides in several factors: the high noise level, the unknown (random) rotations, and the low (sub-Nyquist) sampling rate.
+In particular, we 
+study the interplay between four parameters: the bandlimit $\tB$, the number of samples $L$, the noise level $\sigma$, and the number of measurements $N$. 
 Informally, the main theoretical result of this paper states the following:
 \begin{thm}[informal]
-Suppose that $N\to\infty$ measurements from the model~\eqref{eq:model} are collected in the high noise regime and each measurement is sampled at $L$ equally-spaced positions. 
-Then, if $N$ scales at least like $\sigma^6$, one can identify up to $B\approx L^2/6$ frequencies. %That is, one can identify (order of) $L^2$ from $L$ samples per measurement. 
+Suppose that $N\to\infty$ measurements from~\eqref{eq:model} are collected in the high noise regime and each measurement is sampled at $L$ equally-spaced locations. 
+Then, if $N$ is proportional to  (at least) $\sigma^6$, one can identify up to $B\approx L^2/6$ frequencies. In other words, only $O(\sqrt{B})$ samples are required to  estimate a signal with bandlimit $B$.
+ If less measurements are collected, then the signal cannot be recovered even if each measurement is sampled at the Nyquist rate.
 \end{thm}
 
-The problem of estimating a high-resolution signal from low-resolution measurements (e.g., a few samples) is usually referred to as \emph{super-resolution from multiple measurements}. This problem attracted the attention of numerous researchers  in the last couple of decades in a variety of fields, such as computer vision, image processing and medical imaging~\cite{park2003super,farsiu2004advances, greenspan2008super}.
-Since given the rotations the problem is linear, many papers have focused on the problem of estimating the set of $\theta_i$. However, in the high noise regime---which is the focal point of this work---the rotations cannot be estimated reliably by any method~\cite{bendory2018toward,aguerrebere2016fundamental}. 
-We mention by passing that many works in recent years studied super-resolution from a single image based on prior knowledge (such as sparsity~\cite{huang2009super,candes2014towards} and recurrence of patches within the same image~\cite{glasner2009super}),
+The problem of estimating a high-resolution signal from low-resolution measurements (e.g., few samples) is usually referred to as \emph{super-resolution from multiple measurements}. This problem attracted the attention of numerous researchers  in the last couple of decades in a variety of fields, such as computer vision, image processing and medical imaging~\cite{park2003super,farsiu2004advances, greenspan2008super}.
+Given the rotations, the problem is linear and rather simple.
+Thus, many papers have focused on the problem of estimating the set of relative rotations $\theta_i$. However, we cannot employ such strategy: in the high noise regime---which is the focal point of this work---the rotations cannot be estimated reliably by any method~\cite{bendory2018toward,aguerrebere2016fundamental}. 
+We mention by passing that many works in recent years studied super-resolution from a single image based on prior knowledge (such as,  sparsity~\cite{huang2009super,candes2014towards} and recurrence of patches within the same image~\cite{glasner2009super}),
 and learning~\cite{lim2017enhanced}; just to mention few works out of a huge literature on the subject. 
 
 The model~\eqref{eq:model} is a special case of the \emph{multi-reference alignment} (MRA) problem. This problem involves estimating a signal (which lies in a known vector space) from multiple noisy measurements; in each measurement the signal is acted upon by an unknown element of a known group $G$. 
@@ -83,17 +91,19 @@ y = T(g\circ x) +\varepsilon, \qquad g\in G,
 \end{equation}
 where $T$ is a known linear operator. 
 In our model~\eqref{eq:model}, the signal lies in the space of B-bandlimited signals, $G$ the rotation group $U(1)$ (isomorphic to the  two-dimensional rotation group $SO(2)$), and the linear operator is the point-wise sampling $P$.
-Similarly to many MRA models in the literature,  our work is also inspired by single particle reconstruction problems using cryo-electron microscopy (cryo-EM) and x-ray free electron lasers (XFEL)---high-resolution structural methods for biological macromolecules~\cite{frank2006three,kuhlbrandt2014resolution,singer2018mathematics}. 
+Similarly to many MRA models in the literature,  this work is  inspired by single particle reconstruction problems using cryo-electron microscopy (cryo-EM) and X-ray free electron lasers (XFEL)---high-resolution structural methods for biological macromolecules~\cite{frank2006three,kuhlbrandt2014resolution,singer2018mathematics}. 
 In particular, this work is a first step towards understanding the resolution limits in these modalities. In Section~\ref{sec:future_work} we make this connection explicit.
 
-In the low noise regime, one can try to estimate the unknown group elements (that is, rotations) using one of many synchronization methods~\cite{singer2011angular,bandeira2015non,boumal2016nonconvex,chen2018projected,singer2011three}.
-Once those elements are known, estimating $x$ is a linear, and relatively easy, problem. 
+In the low noise regime, one can try to estimate the unknown group elements (e.g., rotations) using one of many synchronization methods~\cite{singer2011angular,bandeira2015non,boumal2016nonconvex,chen2018projected,singer2011three}.
+Once those elements were estimated, recovering $x$ is a linear, and relatively easy, problem. 
 As aforementioned, one cannot estimate the missing rotations of~\eqref{eq:model}---by any method---in the high noise regime~\cite{bendory2018toward,aguerrebere2016fundamental}.
-To circumvent this impossibility result, we study two methods.
-The first approach relies on which are invariant 
-under rotations. In the limit of $N,\sigma\to\infty$, it was shown that this strategy achieves the optimal  estimation rate---that is, no other method can obtain accurate estimation of the signal with fewer measurements~\cite{bandeira2017optimal,bandeira2017estimation,abbe2018multireference,abbe2018estimation}. Based on this approach, different algorithmic methods were proposed under different MRA setups~\cite{bendory2017bispectrum,perry2017sample,abbe2018multireference,boumal2018heterogeneous,chen2018spectral,ma2018heterogeneous,bandeira2014multireference}, as well as for  cryo-EM and XFEL~\cite{kam1980reconstruction,liu2013three,kurta2017correlations,levin20173d,bendory2018toward,pande2018ab,von2018structure}. 
+To circumvent this barrier, we  consider two techniques.
+The first approach relies on features (specifically, monomials) that are invariant under rotations. In the limit of $N,\sigma\to\infty$, it was shown that this strategy achieves the optimal  estimation rate---that is, no other method can obtain accurate estimation of the signal with fewer measurements~\cite{bandeira2017optimal,bandeira2017estimation,abbe2018multireference,abbe2018estimation}. 
+In particular, even the number of samples exceeds the Nyquist rate ($L\geq 2B+1$), the number of observations should scale, at least, like $\sigma^6$. In this work, we show that in the same estimation rate one can estimate the signal with much fewer samples.   
+Section~\ref{sec:invariants} elaborates on this method.
 
-From reasons that are explained later on, we employ the invariant approach only for the theoretical analysis, carried out in Sections~\ref{sec:background} and~\ref{sec:theory}. As a computational framework, we devise an expectation-maximization (EM) algorithm, which marginalizes over the rotations rather than estimating them explicitly.  The EM algorithm is explained in detail in Section~\ref{sec:EM}.
+Based on the invariant approach, different algorithmic methods were proposed under different MRA setups~\cite{bendory2017bispectrum,perry2017sample,abbe2018multireference,boumal2018heterogeneous,chen2018spectral,ma2018heterogeneous,bandeira2014multireference}, as well as for  cryo-EM and XFEL~\cite{kam1980reconstruction,liu2013three,kurta2017correlations,levin20173d,bendory2018toward,pande2018ab,von2018structure}. 
+From reasons that are explained later on, we employ the invariant approach solely for theoretical analysis purposes, carried out in Section~\ref{sec:theory}. As a computational framework, we devise an expectation-maximization (EM) algorithm that bypasses the limit on estimating the rotations by marginalizing over them.  The EM algorithm is explained in detail in Section~\ref{sec:EM}.
 Numerical experiments show that this EM algorithm enables to resolve frequencies well beyond the Nyquist rate.
 
 \section{Theory} \label{sec:theory}
@@ -402,7 +412,7 @@ Such a  result will follow directly from the generalization of~\cite{bandeira201
 
 The main motivation of this work arises from cryo-EM and XFEL. 
 The measurements in these applications  (under simplifying assumption that are beyond the scope of this paper)
-agree with the general MRA model~\eqref{eq:model} where $g\in SO(3)$ (the group of 3-D rotations),  the 3-D signal $x$ is assumed to be bounded in a ball (``bandlimited'' volume), and the linear operator $T$ collects samples from the the tomographic projection of $g\cdot x$ from a fixed direction. The question then would be whether the obtainable resolution of a 3-D reconstruction algorithm can overtake the resolution dedicated by the sampling operator---that is, the resolution of the 2-D images. Recently, a proof of concept on simulated data has been published~\cite{chen2018single}. Extending our analysis to this case is highly non-trivial and we leave it for future research. 
+agree with the general MRA model~\eqref{eq:model} where $g\in SO(3)$ (the group of 3-D rotations),  the 3-D signal $x$ is assumed to be bounded in a ball (``bandlimited'' volume), and the linear operator $T$ collects samples from the the tomographic projection of $g\cdot x$ from a fixed direction. The question then would be whether the obtainable resolution of a 3-D reconstruction algorithm can overtake the resolution dedicated by the sampling operator---that is, the resolution of the 2-D images. Recently, a proof of concept on simulated  data has been published~\cite{chen2018single}. Extending our analysis to this case is highly non-trivial and we leave it for future research. 
 In addition, it would interesting to extend the model~\eqref{eq:model} to incorporate  different distributions of rotations (since the  distribution in cryo-EM is typically non-uniform) and other type of noise statistics (e.g., the  XFEL images are corrupted with Poisson noise).
 
 \bibliographystyle{plain}
