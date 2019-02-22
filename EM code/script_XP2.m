@@ -16,7 +16,7 @@ seed = rng(8679);
 L = 40; % signal length
 K = 4; % down-sampling factor 
 assert(mod(L,K)==0,'Please choose K to be a divsor of L');
-Nyquist = L/K/2; % Nyquist sampling rate
+Nyquist = (L/K-1)/2; % Nyquist sampling rate
 
 % number of EM trials 
 num_EM_trial = 5;
@@ -71,7 +71,7 @@ x_init = LP_proj(x_init, B);
 % maximal value of the log-likelihood function 
 MaxLL(iter_em) = LL(end); 
 
-save('x_est_XP2','x_est_XP2');
+%save('x_est_XP2','x_est_XP2');
 
 end
 
@@ -112,7 +112,9 @@ subplot(2,1,2);
 hold on;
 plot(1:B, err_fft);
 plot([Nyquist Nyquist],[0 max(err_fft)],'--')
-title('Relative error as a function of frequency')
+%title('Relative error as a function of frequency')
+xlabel('frequency');
+ylabel('relative error');
 axis tight
 fontsz = 11;
 filename = 'XP2.pdf';

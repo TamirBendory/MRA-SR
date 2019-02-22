@@ -5,24 +5,24 @@ clc;
 %% Problem setup
 
 % Start the parallel pool
-parallel_nodes = 2;
+parallel_nodes = 20;
 if isempty(gcp('nocreate'))
     parpool(parallel_nodes, 'IdleTimeout', 240);
 end
 
 % seeds the random number generator
-seed = rng(8679);
+seed = rng(3290);
 
-L = 40; % signal length
+L = 20; % signal length
 K = 4; % down-sampling factor 
 assert(mod(L,K)==0,'Please choose K to be a divsor of L');
-Nyquist = L/K/2; % Nyquist sampling rate
+Nyquist = (L/K-1)/2; % Nyquist sampling rate
 
 % number of EM trials 
 num_EM_trial = 5;
 
 % Number of measurements
-N = 1e7;
+N = 1e9;
 
 % Noise level
 snr = 1/2;
@@ -32,7 +32,7 @@ snr = 1/2;
 %decaying rate of the signal's power spectrum
 beta = 2; 
 % strict bandwidth (only 2B-1 are non-zero)
-B = 10;  
+B = 5;  
 
 [x_true, sigma_f, SIGMA] = generate_signal(beta, L);
 
@@ -91,7 +91,7 @@ save('x_est_best_XP4','x_est_best');
 
 %% Evaluate quality of recovery
 
-x_est_best = align_to_reference(x_est_best, x_true);
+x_est_best = align_to_reference(q1, x_true);
 err_x = norm(x_est_best - x_true) / norm(x_true);
 fprintf('recovery error = %.4g\n', err_x);
 

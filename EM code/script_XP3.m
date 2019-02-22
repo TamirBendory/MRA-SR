@@ -11,10 +11,10 @@ if isempty(gcp('nocreate'))
 end
 
 % seeds the random number generator
- seed = rng(9894);
+ seed = rng(653);
 
-L = 100; % signal length
-K = 10; % down-sampling factor 
+L = 60; % signal length
+K = 6; % down-sampling factor 
 assert(mod(L,K)==0,'Please choose K to be a divsor of L');
 
 % number of EM trials 
@@ -24,14 +24,14 @@ num_EM_trial = 100;
 N = 1e3;
 
 % Noise level
-snr = 40;
+snr = 10;
 
 %decaying rate of the signal's power spectrum
 beta = 1;
 
 %% Loop over different values of B
 num_iter = 100;
-B_vec = 3:1:40;
+B_vec = 6:2:40;
 
 err_x_XP3 = zeros(num_iter, length(B_vec));
 
@@ -94,23 +94,21 @@ end
 
 %% plotting
 
-load ('err_x_XP3');
-err_x_XP3 = mean(err_x_XP3(1:68,:),1);
-first_ind = 5;
+err_x_XP3 = mean(err_x_XP3,1);
 
 figure; 
 hold on;
 %set(gca, 'XScale', 'log');
 set(gca, 'YScale', 'log');
-plot(B_vec(first_ind:end), err_x_XP3(first_ind:end));
-xlim([B_vec(first_ind),B_vec(end)]);
-ylim([min(err_x_XP3),1]);
+plot(B_vec, err_x_XP3,'linewidth',0.8);
+xlim([B_vec(1),B_vec(end)]);
+ylim([0.01,1]);
 grid on;
 %axis tight;
 %line([vert_line vert_line],get(gca,'YLim'),'Color','red','LineStyle', '--')
 xlabel('B');
 ylabel('relative error');
 
-%fontsz = 11;
-%filename = 'XP3.pdf';
-%pdf_print_code(gcf, filename, fontsz)
+fontsz = 11;
+filename = 'XP3.pdf';
+pdf_print_code(gcf, filename, fontsz)
