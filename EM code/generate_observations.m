@@ -17,6 +17,6 @@ end
 X = X(1:K:end, :);
 
 % adding Gaussian noise
-X = X + sigma*randn(L/K, N);
+X = X + sigma*randn(size(X));
 
 end

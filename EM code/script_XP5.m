@@ -1,22 +1,36 @@
 clear;
 close all;
 clc;
+%dbstop if error
 
 %% Problem setup
 
 % Start the parallel pool
-parallel_nodes = 2;
-if isempty(gcp('nocreate'))
-    parpool(parallel_nodes, 'IdleTimeout', 240);
-end
+% parallel_nodes = 2;
+% if isempty(gcp('nocreate'))
+%     parpool(parallel_nodes, 'IdleTimeout', 240);
+% end
 
 % seeds the random number generator
-seed = rng(542);
+seed = rng(9843);
 
-L = 100; % signal length
-K = 10; % down-sampling factor 
-assert(mod(L,K)==0,'Please choose K to be a divsor of L');
-Nyquist = L/K/2; % (should be (L/K-1)/2) Nyquist sampling rate
+B = 10;  % strict bandwidth (only 2B+1 are non-zero)
+L = 10*(2*B+1); % signal length
+
+%decaying rate of the signal's power spectrum
+beta = 0; 
+[x_LP, sigma_f, SIGMA] = generate_signal(beta, L);
+x_LP = LP_proj(x_LP, B/2); %bandwidth of B=5 ;
+
+x_true = x_LP;
+shift = 10;
+x_true(round(L/2)-shift) = x_true(round(L/2)-shift) + 0.5;
+x_true(round(L/2)+shift) = x_true(round(L/2)+shift) + 0.5;
+x_true = LP_proj(x_true, B);
+
+% Noise level
+snr = 1/2;
+noise_level = norm(x_true)/sqrt(snr*L); % snr = norm(x)^2/(L*sigma^2)
 
 % number of EM trials 
 num_EM_trial = 5;
@@ -24,46 +38,12 @@ num_EM_trial = 5;
 % Number of measurements
 N = 1e4;
 
-% Noise level
-snr = 1;
-
-%% Generating a signal with the desired power spectrum
-
-%decaying rate of the signal's power spectrum
-beta = 0; 
-% strict bandwidth (only 2B+1 are non-zero)
-B = 10;  
-
-%[x_true, sigma_f, SIGMA] = generate_signal(beta, L);
-[x_LP, sigma_f, SIGMA] = generate_signal(beta, L);
-
-%projecting to Nyquist (B = (L-1)/2);
-x_LP = LP_proj(x_LP, (L/K)/2);
-
-x_true = x_LP;
-shift = 5;
-x_true(50-shift) = x_true(50-shift) + 0.5;
-x_true(50+shift) = x_true(50+shift) + 0.5;
-x_true = LP_proj(x_true, B);
-x_true_LP = LP_proj(x_true, (L/K)/2);
- 
- figure; 
- hold on;
- plot(1:L, x_true);
- plot(1:L, x_LP);
-% %legend('true','low-passed','estimated')
-% axis tight
-% hold off;
-
-%projecting the signal into B low frequncies
-%x_true = LP_proj(x_true, B);
-
-
 %% Generate the data
 
-noise_level = norm(x_true)/sqrt(snr*L); % snr = norm(x)^2/(L*sigma^2)
-%save('parameters');
-data = generate_observations(x_true, N, noise_level, K);
+factor = 2; % the down-sampling ratio
+sampling_spacing = L/(2*B+1)*factor+1; % sampling spacing
+data = generate_observations(x_true, N, noise_level, sampling_spacing);
+
 %% EM
 
 S = inv(SIGMA); % Note: S is the inverse of the covarince matrix
@@ -77,26 +57,23 @@ x_est = zeros(L, num_EM_trial);
 MaxLL = zeros(num_EM_trial, 1);
 
 % plot the Log Likelihood progress
-flag_plot_LL = 1;
-
+flag_plot_LL = 0;
 if flag_plot_LL 
 figure; hold on;
 end
 
 EM_verbosity = 1;
-
 for iter_em = 1:num_EM_trial
 
  if num_EM_trial>1
     fprintf('EM trial #%g out of %g\n',iter_em,num_EM_trial ); 
  end
- 
-% initializing EM
+ % initializing EM
 x_init = mvnrnd(zeros(L,1), SIGMA);
 x_init = x_init(:);
 x_init = LP_proj(x_init, B);
 
-[x_est(:,iter_em), LL, LL_dis] = SR_EM(data, noise_level, K, x_init, S, B, niter,...
+[x_est(:,iter_em), LL, LL_dis] = SR_EM(data, noise_level, sampling_spacing, x_init, S, B, niter,...
     tolerance, EM_verbosity);
 
 if flag_plot_LL 
@@ -137,18 +114,22 @@ x_est_best = align_to_reference(x_est_best, x_true);
 err_x = norm(x_est_best - x_true) / norm(x_true);
 fprintf('recovery error = %.4g\n', err_x);
 
-ln = 0.8; 
-
+ln = 1.1; 
+xn = x_true + noise_level*randn(L,1);
+load('color');
 figure; 
 
 %subplot(2,1,1);
 hold on;
 plot(1:L, x_true,'linewidth',ln);
-plot(1:L, x_true_LP,'linewidth',ln);
+stem(1:2*B+1:L, xn(1:2*B+1:end),'square','linewidth',1.5);        
+plot(1:L, LP_proj(x_true, B/2),'linewidth',ln, 'color',color(5,:));
 plot(1:L, x_est_best,'linewidth',ln);
-legend('true','low-passed','estimated')
+legend('true', 'samples', 'low-passed','estimated')
 %title(strcat('err = ', num2str( err_x)));
 axis tight
+set(gca,'Visible','off')
+set(gcf,'color','w');
 hold off;
 
 % err_fft = abs(fft(x_true) - fft(x_est_best))./abs(fft(x_true));

@@ -18,6 +18,7 @@ K = 6; % down-sampling factor
 assert(mod(L,K)==0,'Please choose K to be a divsor of L');
 
 % number of EM trials 
+
 num_EM_trial = 100;
 
 % Number of measurements
