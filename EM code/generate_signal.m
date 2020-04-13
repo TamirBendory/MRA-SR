@@ -17,6 +17,6 @@ end
 
 SIGMA = circulant(ifft(sigma_f)); % signal's covariance matrix
 x = mvnrnd(zeros(M,1), SIGMA);
-x = x(:)/sqrt(M); 
+x = x(:)/norm(x);
 
 end
