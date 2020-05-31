@@ -1,12 +1,14 @@
 function [x, sigma_f, SIGMA] = generate_signal(beta, M)
 
-% generating a signal of length L with a 1/f^(beta) decaying power spectrum
-% output:  x - the generated signal
-%         sigma_f - the expected power spectrum, decaying like 1./f^beta
+% Generating a signal of length M with a 1/f^(beta) decaying power spectrum
+%
+% Output:  x - the generated signal
+%         sigma_f - the expected power spectrum, decaying as 1./(f^beta)
 %         Sigma - the expected covariance matrix of x
 
+
 sigma_f = zeros(M,1);
-sigma_f(1) = 1;
+sigma_f(1) = 1; % normalized DC 
 if mod(M,2)==0
     sigma_f(2:M/2+1) = 1./((2:M/2+1).^beta);
     sigma_f(M/2+2:M) = flipud(sigma_f(2:M/2));

@@ -1,30 +1,56 @@
-function [x_est, post_value, post_dis] = SR_EM(data, noise_level, K, x_init, S, B, niter, tolerance, verbosity)
+function [x_est, post_value, post_dis] = SR_EM(data, noise_level, K, x_init, B, options)
 
-% The data contains N observations as columns
-
-% outpout: x_est - the estimated signal
-%          post_value - the log posterior per iteration
-%          post_dis - log posterior discrepancy
+% Inputs:
+%       data: contains N observations as columns
+%       noise_level: standard deviation of the Gaussian noise
+%       K: down-sampling factor (sampling spacing)
+%       x_init: initial guess
+%       B: if non-empty, the signal is projected onto its lowest B
+%       frequcnies at each iteration
+%       options.S: the inverse of the prior covariance matrix
+%       options.niter: maximal number of EM iterations
+%       options.tolerance: stopping criterion for EM iterations
 %
-% noise_level - std of the Gaussian noise
-% K - down-sampling factor (sampling spacing)
-% x_init - initial guess
-% S - the inverse of the prior covariance matrix
-% niter - max EM iterations
-% tolerance - stopping criterion for EM iterations
+% Outpouts:
+%       x_est: the estimated signal
+%       post_value: log posterior per iteration
+%       post_dis: log posterior discrepancy
+%
+% Tamir Bendory, last updated: 5/31/2020
 
+%% Default values
+if  ~isfield(options,'niter') || isempty(options.niter)
+    niter = 100; %default value
+else
+    niter = options.niter;
+end
+if  ~isfield(options,'tolerance') || isempty(options.tolerance)
+    tolerance = 1e-5; %default value
+else
+    tolerance = options.tolerance;
+end
+if  ~isfield(options,'verbosity') || isempty(options.verbosity)
+    verbosity = 1; %default value
+else
+    verbosity = options.verbosity;
+end
+if  ~isfield(options,'S') || isempty(options.S)
+    S = []; %default value
+else
+    S = options.S;
+end
+
+%% Preparing for EM iterations
 x_est = x_init;
-% Precomputations on the observations
-fftdata = fft(data);
+fftdata = fft(data); % Precomputations
 sqnormdata = repmat(sum(abs(data).^2, 1), size(data,1), 1);
 post_value = zeros(niter, 1);
 post_dis = zeros(niter-1,1);
 
+%% EM iterations
+
 for iter = 1 : niter
-    % EM iteration
-    [x_new, post_value(iter)] = EM_iteration(x_est, fftdata, sqnormdata, noise_level, K, S);
-    x_new = LP_proj(x_new, B); %projecting onto the signal's bandwidth
-    
+    [x_new, post_value(iter)] = EM_iteration(x_est, fftdata, sqnormdata, noise_level, K, S, B);
     if iter>2
         post_dis(iter-2) = -(post_value(iter) - post_value(iter-1))/post_value(iter);
     end
@@ -41,9 +67,8 @@ for iter = 1 : niter
             break;
         end
     end
-    
+    % update
     x_est = x_new;
-    
     if iter == niter
         fprintf('EM last iteration = %g\n', niter);
     end
@@ -51,13 +76,22 @@ end
 
 end
 
+%%  Execute one iteration of EM .
+function [x_new, post_value] = EM_iteration(x_est, fftdata, sqnormdata, sigma, K, S, B)
 
-% Execute one iteration of EM .
-function [x_new, post_value] = EM_iteration(x_est, fftdata, sqnormdata, sigma, K, S)
+% Inputs:
+%       x_est: current estimate
+%       fftdata
+%       sqnormdata
+%       sigma: noise std
+%       K: down-sampling factor (sampling spacing)
+%       S: the inverse of the prior's covariance
+%       B: if non-empty, the signal is projected onto its lowest B
+%
+% Outpouts:
+%       x_new: new signal estimate
+%       post_value - log posterior value
 
-% S - the inverse of the prior covariance matrix
-% outputs the updated signal and the log likelihood (of the previous
-% iteration)
 M = length(x_est);
 N = size(fftdata,2);
 T = zeros(M,N);
@@ -78,18 +112,11 @@ for i = 1:K
     b(i:K:end) = ifft(sum(conj(fft(w)).*fftdata, 2));
     a(i:K:end) = sum(w(:));
 end
-%b = b/sigma^2/N;
-%A = diag(a)/sigma^2/N + S;
 A = diag(a) + S*sigma^2*N;
-
-if cond(A)>10^14
-    k=1;
-    while cond(A)>10^14
-        A = diag(a) + S*(sigma^(2-0.1*k))*N;
-        k = k+1;
-    end
-end
 x_new = A\b;
+if ~isempty(B)
+    x_new = LP_proj(x_new, B);
+end
 end
 
 % Execute one iteration of EM .
